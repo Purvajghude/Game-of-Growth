@@ -1,0 +1,37 @@
+export const DASH = {
+  layout: "dash-layout",
+  sideNav: "dash-side-nav",
+  navOverview: "dash-nav-overview",
+  navCrm: "dash-nav-crm",
+  navPipeline: "dash-nav-pipeline",
+  navCalendar: "dash-nav-calendar",
+  navAi: "dash-nav-ai",
+  navSettings: "dash-nav-settings",
+  // CRM
+  crmAddBtn: "dash-crm-add",
+  crmTable: "dash-crm-table",
+  crmFormName: "dash-crm-form-name",
+  crmFormEmail: "dash-crm-form-email",
+  crmFormCompany: "dash-crm-form-company",
+  crmFormStatus: "dash-crm-form-status",
+  crmFormValue: "dash-crm-form-value",
+  crmFormSubmit: "dash-crm-form-submit",
+  // Pipeline
+  pipelineAddBtn: "dash-pipeline-add",
+  pipelineBoard: "dash-pipeline-board",
+  pipelineFormTitle: "dash-pipeline-form-title",
+  pipelineFormClient: "dash-pipeline-form-client",
+  pipelineFormValue: "dash-pipeline-form-value",
+  pipelineFormStage: "dash-pipeline-form-stage",
+  pipelineFormSubmit: "dash-pipeline-form-submit",
+  // Calendar
+  calendarAddBtn: "dash-calendar-add",
+  calendarFormTitle: "dash-calendar-form-title",
+  calendarFormPlatform: "dash-calendar-form-platform",
+  calendarFormDate: "dash-calendar-form-date",
+  calendarFormSubmit: "dash-calendar-form-submit",
+  // AI
+  aiPrompt: "dash-ai-prompt",
+  aiGenerate: "dash-ai-generate",
+  aiOutput: "dash-ai-output",
+};
