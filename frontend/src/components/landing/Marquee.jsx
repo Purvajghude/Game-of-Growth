@@ -1,35 +1,35 @@
-// Magical transition marquee between Hero (dark) and Brutalism (yellow)
+// Slower, calmer marquee — ink on paper, no neon star
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
-import { Star } from "lucide-react";
 
 export default function Marquee() {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const rotate = useTransform(scrollYProgress, [0, 1], [-3, 3]);
-  const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0.6]);
+  const x = useTransform(scrollYProgress, [0, 1], [0, -80]);
 
   const words = [
-    "BRANDS THAT MOVE",
-    "WEBSITES THAT CONVERT",
-    "CONTENT THAT SPREADS",
-    "AI THAT AUTOMATES",
-    "DESIGN THAT WINS",
+    "Brand identity",
+    "Editorial web",
+    "Product design",
+    "Motion & film",
+    "AI operations",
+    "Studio thinking",
   ];
 
   return (
-    <section ref={ref} className="relative bg-[#0a0a0b] py-24 overflow-hidden">
-      <motion.div style={{ opacity }} className="relative">
-        <motion.div style={{ rotate }} className="py-4 border-y border-white/10 bg-gradient-to-r from-transparent via-white/[0.03] to-transparent">
-          <div className="marquee-track whitespace-nowrap font-display italic text-[12vw] md:text-[8vw] leading-none text-white/90">
+    <section ref={ref} className="relative bg-[var(--paper)] py-28 overflow-hidden grain-soft">
+      <div className="absolute inset-0 bg-grid-fine pointer-events-none" />
+      <motion.div style={{ x }} className="relative">
+        <div className="py-3 border-y border-[var(--line)]">
+          <div className="marquee-track whitespace-nowrap font-display leading-none" style={{ fontSize: "clamp(56px,10vw,160px)", fontVariationSettings: "'opsz' 144, 'SOFT' 80, 'WONK' 1" }}>
             {[...words, ...words, ...words].map((w, i) => (
-              <span key={i} className="inline-flex items-center gap-8 px-4">
+              <span key={i} className="inline-flex items-baseline gap-8 px-2 italic text-[var(--ink)]">
                 {w}
-                <Star className="w-12 h-12 md:w-16 md:h-16 text-[#ffb800] fill-[#ffb800]" strokeWidth={1} />
+                <span className="text-[var(--accent)] font-display not-italic" style={{ fontVariationSettings: "'opsz' 144, 'SOFT' 0" }}>·</span>
               </span>
             ))}
           </div>
-        </motion.div>
+        </div>
       </motion.div>
     </section>
   );

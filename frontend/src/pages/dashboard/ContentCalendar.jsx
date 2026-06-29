@@ -68,29 +68,29 @@ export default function ContentCalendar() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={prev} className="w-9 h-9 rounded-lg border border-white/10 flex items-center justify-center hover:bg-white/5"><ChevronLeft className="w-4 h-4" /></button>
-          <h2 className="font-display italic text-3xl text-white">{monthName} {year}</h2>
-          <button onClick={next} className="w-9 h-9 rounded-lg border border-white/10 flex items-center justify-center hover:bg-white/5"><ChevronRight className="w-4 h-4" /></button>
+          <button onClick={prev} className="w-9 h-9 rounded-lg border border-[var(--line)] flex items-center justify-center hover:bg-[var(--paper-2)]"><ChevronLeft className="w-4 h-4" /></button>
+          <h2 className="font-display text-3xl text-[var(--ink)]">{monthName} {year}</h2>
+          <button onClick={next} className="w-9 h-9 rounded-lg border border-[var(--line)] flex items-center justify-center hover:bg-[var(--paper-2)]"><ChevronRight className="w-4 h-4" /></button>
         </div>
         <button data-testid={DASH.calendarAddBtn} onClick={() => openAt(iso(new Date()))} className="dash-btn inline-flex items-center gap-1.5"><Plus className="w-4 h-4" /> Add Event</button>
       </div>
 
       <div className="dash-card p-3">
-        <div className="grid grid-cols-7 gap-px bg-white/5 rounded-lg overflow-hidden">
+        <div className="grid grid-cols-7 gap-px bg-[var(--paper-2)] rounded-lg overflow-hidden">
           {["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map((d) => (
-            <div key={d} className="bg-[#0d0d10] py-2 text-center font-mono text-[10px] text-white/40 tracking-widest uppercase">{d}</div>
+            <div key={d} className="bg-white py-2 text-center font-mono text-[10px] text-[var(--muted)] tracking-widest uppercase">{d}</div>
           ))}
           {cells.map((c, i) => {
             const dateStr = c ? iso(c) : null;
             const dayEvents = c ? events.filter((e) => e.date === dateStr) : [];
             const isToday = c && iso(c) === iso(new Date());
             return (
-              <div key={i} onClick={() => c && openAt(dateStr)} className={`bg-[#0d0d10] min-h-[110px] p-2 ${c ? "cursor-pointer hover:bg-white/[0.02]" : "opacity-30"}`}>
+              <div key={i} onClick={() => c && openAt(dateStr)} className={`bg-white min-h-[110px] p-2 ${c ? "cursor-pointer hover:bg-[var(--paper-2)]" : "opacity-30"}`}>
                 {c && (
                   <>
                     <div className="flex items-center justify-between">
-                      <span className={`font-mono text-xs ${isToday ? "text-[#ffb800] font-bold" : "text-white/60"}`}>{c.getDate()}</span>
-                      {dayEvents.length > 0 && <span className="font-mono text-[10px] text-white/40">{dayEvents.length}</span>}
+                      <span className={`font-mono text-xs ${isToday ? "text-[var(--accent)] font-semibold" : "text-[var(--ink-2)]"}`}>{c.getDate()}</span>
+                      {dayEvents.length > 0 && <span className="font-mono text-[10px] text-[var(--muted)]">{dayEvents.length}</span>}
                     </div>
                     <div className="mt-1 space-y-1">
                       {dayEvents.slice(0, 3).map((e) => (
@@ -98,7 +98,7 @@ export default function ContentCalendar() {
                           <span className="text-[9px] opacity-60 mr-1">{e.platform.slice(0, 2).toUpperCase()}</span>{e.title}
                         </div>
                       ))}
-                      {dayEvents.length > 3 && <p className="text-[10px] text-white/40">+{dayEvents.length - 3} more</p>}
+                      {dayEvents.length > 3 && <p className="text-[10px] text-[var(--muted)]">+{dayEvents.length - 3} more</p>}
                     </div>
                   </>
                 )}
@@ -110,33 +110,33 @@ export default function ContentCalendar() {
 
       {open && (
         <div className="fixed inset-0 z-50">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-0 bottom-0 w-full max-w-md bg-[#0d0d10] border-l border-white/10 p-6 overflow-y-auto">
+          <div className="absolute inset-0 bg-[var(--ink)]/40 backdrop-blur-sm" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 top-0 bottom-0 w-full max-w-md bg-white border-l border-[var(--line)] p-6 overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="font-display italic text-3xl text-white">New content</h3>
-              <button onClick={() => setOpen(false)} className="w-8 h-8 rounded-lg border border-white/10 flex items-center justify-center"><X className="w-4 h-4" /></button>
+              <h3 className="font-display text-3xl text-[var(--ink)]">New content</h3>
+              <button onClick={() => setOpen(false)} className="w-8 h-8 rounded-lg border border-[var(--line)] flex items-center justify-center"><X className="w-4 h-4" /></button>
             </div>
             <form onSubmit={create} className="space-y-3">
-              <div className="grid gap-1"><label className="font-mono text-[10px] uppercase text-white/40 tracking-widest">Title *</label><input data-testid={DASH.calendarFormTitle} className="dash-input" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
+              <div className="grid gap-1"><label className="font-mono text-[10px] uppercase text-[var(--muted)] tracking-widest">Title *</label><input data-testid={DASH.calendarFormTitle} className="dash-input" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="grid gap-1"><label className="font-mono text-[10px] uppercase text-white/40 tracking-widest">Platform</label>
+                <div className="grid gap-1"><label className="font-mono text-[10px] uppercase text-[var(--muted)] tracking-widest">Platform</label>
                   <select data-testid={DASH.calendarFormPlatform} className="dash-input" value={form.platform} onChange={(e) => setForm({ ...form, platform: e.target.value })}>
                     {PLATFORMS.map((p) => <option key={p} value={p}>{p}</option>)}
                   </select>
                 </div>
-                <div className="grid gap-1"><label className="font-mono text-[10px] uppercase text-white/40 tracking-widest">Date *</label><input data-testid={DASH.calendarFormDate} type="date" className="dash-input" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></div>
+                <div className="grid gap-1"><label className="font-mono text-[10px] uppercase text-[var(--muted)] tracking-widest">Date *</label><input data-testid={DASH.calendarFormDate} type="date" className="dash-input" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></div>
               </div>
-              <div className="grid gap-1"><label className="font-mono text-[10px] uppercase text-white/40 tracking-widest">Status</label>
+              <div className="grid gap-1"><label className="font-mono text-[10px] uppercase text-[var(--muted)] tracking-widest">Status</label>
                 <select className="dash-input" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
                   {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
-              <div className="grid gap-1"><label className="font-mono text-[10px] uppercase text-white/40 tracking-widest">Notes</label><textarea rows={4} className="dash-input" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
+              <div className="grid gap-1"><label className="font-mono text-[10px] uppercase text-[var(--muted)] tracking-widest">Notes</label><textarea rows={4} className="dash-input" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
               <div className="pt-3 flex gap-2">
                 <button data-testid={DASH.calendarFormSubmit} type="submit" className="dash-btn flex-1">Create event</button>
                 <button type="button" onClick={() => setOpen(false)} className="dash-btn-ghost">Cancel</button>
               </div>
-              <p className="font-mono text-[10px] text-white/40">Tip: click any day to add an event for that date.</p>
+              <p className="font-mono text-[10px] text-[var(--muted)]">Tip: click any day to add an event for that date.</p>
             </form>
           </div>
         </div>
@@ -147,8 +147,8 @@ export default function ContentCalendar() {
 
 function statusStyle(s) {
   switch (s) {
-    case "published": return "bg-emerald-500/20 text-emerald-300";
-    case "scheduled": return "bg-amber-500/20 text-amber-300";
-    default: return "bg-cyan-500/15 text-cyan-300";
+    case "published": return "bg-[var(--ink)] text-[var(--paper)]";
+    case "scheduled": return "bg-[#e6dec6] text-[#6b5a1e]";
+    default:          return "bg-[var(--paper-3)] text-[var(--ink-2)]";
   }
 }

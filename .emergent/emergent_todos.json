@@ -1,26 +1,30 @@
 [
   {
-    "content": "Phase 2: Build foundation",
+    "content": "Phase 3: Rewrite foundation (Fraunces + Inter, light matte tokens, grid+grain, slowed motion)",
     "status": "completed"
   },
   {
-    "content": "Phase 2: Build marketing site - all 12 sections",
+    "content": "Phase 3: Redesign Hero (matte paper, monumental Fraunces, 3D parallax, no orbs)",
     "status": "completed"
   },
   {
-    "content": "Phase 2: Build /dashboard shell with 6 core modules",
+    "content": "Phase 3: Redesign Nav + Marquee + Brutalism + Glassmorphism + Minimalism (light)",
     "status": "completed"
   },
   {
-    "content": "Phase 2: Build minimal backend (Leads, Pipeline, Calendar CRUD)",
+    "content": "Phase 3: Redesign Maximalism (dark editorial, no slop) + SaaS (light) + Luxury (matte gold)",
     "status": "completed"
   },
   {
-    "content": "Phase 2: Run testing_agent_v3 for end-to-end validation - 100% pass",
+    "content": "Phase 3: Redesign Process + CaseStudies + Testimonials + Storefront + FinalCta + Footer",
     "status": "completed"
   },
   {
-    "content": "Phase 2: All user stories covered — marketing + dashboard",
+    "content": "Phase 3: Convert dashboard to light theme (Notion-style)",
+    "status": "completed"
+  },
+  {
+    "content": "Phase 3: Visual verification + verify backend still works",
     "status": "completed"
   }
 ]

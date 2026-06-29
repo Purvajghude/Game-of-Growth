@@ -1,3 +1,4 @@
+// Final CTA + contact form — light editorial, single quiet motion layer
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { LANDING } from "@/constants/testIds";
@@ -12,79 +13,71 @@ export default function FinalCta() {
 
   const submit = async (e) => {
     e.preventDefault();
-    if (!form.name || !form.email || !form.message) {
-      toast.error("Please fill name, email and message");
-      return;
-    }
+    if (!form.name || !form.email || !form.message) { toast.error("Please fill name, email and message"); return; }
     setLoading(true);
     try {
       await api.createContact(form);
-      setDone(true);
-      toast.success("Message received — we'll be in touch within 24h.");
+      setDone(true); toast.success("Message received — we'll be in touch within 24h.");
       setForm({ name: "", email: "", company: "", message: "" });
-    } catch (err) {
-      console.error(err);
-      toast.error("Something went wrong. Try again?");
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { console.error(err); toast.error("Something went wrong. Try again?"); }
+    finally { setLoading(false); }
   };
 
   return (
-    <section id="contact" data-testid={LANDING.finalCta} className="relative bg-[#0a0a0b] py-32 overflow-hidden">
-      {/* big animated gradient */}
+    <section id="contact" data-testid={LANDING.finalCta} className="relative bg-[var(--paper)] py-28 lg:py-44 overflow-hidden grain-soft">
+      <div className="absolute inset-0 bg-grid pointer-events-none" />
+      {/* very subtle, slow ambient layer */}
       <motion.div
-        className="absolute inset-0 opacity-40 pointer-events-none"
-        animate={{ backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"] }}
-        transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
-        style={{
-          background: "radial-gradient(circle at 20% 20%, #ffb800 0%, transparent 40%), radial-gradient(circle at 80% 60%, #7c3aed 0%, transparent 40%), radial-gradient(circle at 50% 100%, #06b6d4 0%, transparent 50%)",
-          backgroundSize: "200% 200%",
-        }}
+        aria-hidden
+        className="absolute inset-0 pointer-events-none opacity-50"
+        animate={{ y: [0, -10, 0] }}
+        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+        style={{ background: "radial-gradient(60% 50% at 50% 20%, rgba(20,19,15,0.05) 0%, transparent 70%)" }}
       />
-      <div className="relative mx-auto max-w-[1400px] px-6 lg:px-10">
+
+      <div className="relative mx-auto max-w-[1380px] px-6 lg:px-10">
         <motion.h2
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.9 }}
-          className="headline-massive text-white text-center text-[14vw] md:text-[12vw] leading-[0.92]"
+          transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+          className="headline text-center"
+          style={{ fontSize: "clamp(64px, 11vw, 200px)" }}
         >
           Ready to build<br/>something <em>extraordinary?</em>
         </motion.h2>
 
         <div className="mt-12 flex items-center justify-center gap-3 flex-wrap">
-          <a href="#contact-form" data-testid={LANDING.finalCtaPrimary} className="btn-pill btn-pill-primary">
-            Book a Strategy Call <ArrowUpRight className="w-4 h-4" />
+          <a href="#contact-form" data-testid={LANDING.finalCtaPrimary} className="btn btn-primary" data-cursor="hover">
+            Book a strategy call <ArrowUpRight className="w-4 h-4" />
           </a>
-          <a href="#work" data-testid={LANDING.finalCtaSecondary} className="btn-pill btn-pill-ghost">
-            Explore Our Work
+          <a href="#work" data-testid={LANDING.finalCtaSecondary} className="btn btn-ghost" data-cursor="hover">
+            Explore our work
           </a>
         </div>
 
-        {/* contact form */}
-        <div id="contact-form" className="mt-24 grid lg:grid-cols-2 gap-12 items-start">
+        <div id="contact-form" className="mt-24 grid lg:grid-cols-2 gap-16 items-start">
           <div>
-            <p className="section-label">Let's talk</p>
-            <h3 className="font-display italic text-5xl md:text-6xl text-white mt-3">Tell us about your <em>ambition.</em></h3>
-            <p className="mt-6 text-white/60 max-w-md">Fill the form and we'll respond within 24 hours with next steps or a quick scope call.</p>
-            <div className="mt-10 space-y-4 text-white/70 font-sans">
-              <p>→ hello@gameofgrowth.studio</p>
-              <p>→ Lisbon · New York · Remote-first</p>
-              <p className="font-mono text-[11px] text-white/40 tracking-widest mt-6">CURRENTLY ACCEPTING 4 PROJECTS FOR Q2 2025</p>
+            <p className="eyebrow">Let's talk</p>
+            <h3 className="headline mt-3" style={{ fontSize: "clamp(40px, 5vw, 80px)" }}>Tell us about your <em>ambition.</em></h3>
+            <p className="lede mt-6 max-w-md">Fill the form and we'll respond within 24 hours with next steps or a quick scope call.</p>
+            <div className="mt-10 space-y-3 text-[var(--ink-2)] font-sans">
+              <p className="text-[15px]">→ hello@gameofgrowth.studio</p>
+              <p className="text-[15px]">→ Lisbon · New York · Remote-first</p>
+              <p className="font-mono text-[10.5px] text-[var(--muted)] tracking-widest mt-8 uppercase">Currently accepting 4 projects for Q2 2025</p>
             </div>
           </div>
-          <form data-testid={LANDING.contactForm} onSubmit={submit} className="grid gap-4 bg-white/[0.03] border border-white/10 backdrop-blur rounded-3xl p-6 md:p-8">
+          <form data-testid={LANDING.contactForm} onSubmit={submit} className="grid gap-4 bg-white border border-[var(--line-2)] rounded-[18px] p-7 md:p-9">
             <div className="grid sm:grid-cols-2 gap-4">
-              <input data-testid={LANDING.contactName} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Your name" className="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-[#ffb800]" />
-              <input data-testid={LANDING.contactEmail} type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="Email" className="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-[#ffb800]" />
+              <input data-testid={LANDING.contactName} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Your name" className="bg-[var(--paper)] border border-[var(--line-2)] rounded-xl px-4 py-3 text-[var(--ink)] placeholder:text-[var(--muted)] focus:outline-none focus:border-[var(--ink)] transition" />
+              <input data-testid={LANDING.contactEmail} type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="Email" className="bg-[var(--paper)] border border-[var(--line-2)] rounded-xl px-4 py-3 text-[var(--ink)] placeholder:text-[var(--muted)] focus:outline-none focus:border-[var(--ink)] transition" />
             </div>
-            <input data-testid={LANDING.contactCompany} value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} placeholder="Company (optional)" className="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-[#ffb800]" />
-            <textarea data-testid={LANDING.contactMessage} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} rows={5} placeholder="What are you trying to build?" className="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-[#ffb800] resize-none" />
-            <button data-testid={LANDING.contactSubmit} type="submit" disabled={loading || done} className="btn-pill btn-pill-primary justify-center disabled:opacity-70">
+            <input data-testid={LANDING.contactCompany} value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} placeholder="Company (optional)" className="bg-[var(--paper)] border border-[var(--line-2)] rounded-xl px-4 py-3 text-[var(--ink)] placeholder:text-[var(--muted)] focus:outline-none focus:border-[var(--ink)] transition" />
+            <textarea data-testid={LANDING.contactMessage} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} rows={5} placeholder="What are you trying to build?" className="bg-[var(--paper)] border border-[var(--line-2)] rounded-xl px-4 py-3 text-[var(--ink)] placeholder:text-[var(--muted)] focus:outline-none focus:border-[var(--ink)] resize-none transition" />
+            <button data-testid={LANDING.contactSubmit} type="submit" disabled={loading || done} className="btn btn-primary justify-center disabled:opacity-70" data-cursor="hover">
               {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending...</> : done ? <><Check className="w-4 h-4" /> Sent</> : <>Send message <ArrowUpRight className="w-4 h-4" /></>}
             </button>
-            <p className="font-mono text-[10px] text-white/40 tracking-widest">YOUR INFO STAYS WITH US — NO LIST, NO SPAM</p>
+            <p className="font-mono text-[10px] text-[var(--muted)] tracking-widest uppercase">Your info stays with us — no list, no spam</p>
           </form>
         </div>
       </div>
