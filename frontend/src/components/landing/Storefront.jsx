@@ -14,7 +14,7 @@ const PRODUCTS = [
 
 export default function Storefront() {
   return (
-    <section id="store" data-testid={LANDING.sectionStore} className="relative bg-[var(--paper)] py-28 lg:py-40 grain-soft">
+    <section id="store" data-testid={LANDING.sectionStore} className="relative bg-[var(--paper)] py-16 lg:py-40 grain-soft">
       <div className="absolute inset-0 bg-grid pointer-events-none" />
       <div className="relative mx-auto max-w-[1380px] px-6 lg:px-10">
         <div className="flex items-end justify-between flex-wrap gap-6 mb-16">

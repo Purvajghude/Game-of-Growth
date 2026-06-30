@@ -8,7 +8,7 @@ export default function SaasPro() {
     <section
       id="services"
       data-testid={LANDING.sectionSaas}
-      className="relative bg-[var(--paper)] py-28 lg:py-40 grain-soft overflow-hidden"
+      className="relative bg-[var(--paper)] py-16 lg:py-40 grain-soft overflow-hidden"
     >
       <div className="absolute inset-0 bg-grid pointer-events-none" />
 

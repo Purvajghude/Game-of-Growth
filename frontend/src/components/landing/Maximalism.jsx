@@ -21,7 +21,7 @@ export default function Maximalism() {
     <section
       data-testid={LANDING.sectionMaxi}
       ref={ref}
-      className="relative py-28 lg:py-40 overflow-hidden grain-dark"
+      className="relative py-16 lg:py-40 overflow-hidden grain-dark"
       style={{ background: "var(--night)", color: "var(--night-ink)" }}
     >
       <div className="absolute inset-0 bg-grid-dark pointer-events-none" />

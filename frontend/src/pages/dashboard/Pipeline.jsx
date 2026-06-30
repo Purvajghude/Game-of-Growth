@@ -1,41 +1,56 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { Plus, X, Trash2 } from "lucide-react";
+import { Plus, X, Trash2, Edit3, DollarSign } from "lucide-react";
 import { DASH } from "@/constants/testIds";
 import { toast } from "sonner";
 
-const STAGES = [
-  { id: "discovery", label: "Discovery", color: "#06b6d4" },
-  { id: "proposal", label: "Proposal", color: "#a855f7" },
-  { id: "negotiation", label: "Negotiation", color: "#f59e0b" },
-  { id: "won", label: "Closed Won", color: "#10b981" },
-  { id: "lost", label: "Closed Lost", color: "#ef4444" },
+const COLUMNS = [
+  { id: "discovery", label: "Discovery" },
+  { id: "proposal", label: "Proposal" },
+  { id: "negotiation", label: "Negotiation" },
+  { id: "won", label: "Won" },
+  { id: "lost", label: "Lost" },
 ];
 
 export default function Pipeline() {
   const [items, setItems] = useState([]);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ title: "", client: "", value: 0, stage: "discovery", owner: "", due_date: "", notes: "" });
+  const [editing, setEditing] = useState(null);
   const [draggingId, setDraggingId] = useState(null);
+  const [form, setForm] = useState({ title: "", client: "", value: 0, stage: "discovery", owner: "", due_date: "", notes: "" });
 
   const load = async () => { try { setItems(await api.listPipeline()); } catch (e) { console.error(e); } };
   useEffect(() => { load(); }, []);
 
-  const reset = () => setForm({ title: "", client: "", value: 0, stage: "discovery", owner: "", due_date: "", notes: "" });
+  const reset = () => { setEditing(null); setForm({ title: "", client: "", value: 0, stage: "discovery", owner: "", due_date: "", notes: "" }); };
+  const openCreate = () => { reset(); setOpen(true); };
+  const openEdit = (i) => {
+    setEditing(i);
+    setForm({ title: i.title, client: i.client || "", value: i.value || 0, stage: i.stage, owner: i.owner || "", due_date: i.due_date || "", notes: i.notes || "" });
+    setOpen(true);
+  };
 
-  const create = async (e) => {
+  const save = async (e) => {
     e.preventDefault();
     if (!form.title) { toast.error("Title is required"); return; }
     try {
-      const created = await api.createPipeline({ ...form, value: Number(form.value) || 0 });
-      setItems((p) => [created, ...p]);
-      toast.success("Deal added"); setOpen(false); reset();
-    } catch (err) { console.error(err); toast.error("Create failed"); }
+      const payload = { ...form, value: Number(form.value) || 0 };
+      if (editing) {
+        const updated = await api.updatePipeline(editing.id, payload);
+        setItems((p) => p.map((x) => x.id === updated.id ? updated : x));
+        toast.success("Deal updated");
+      } else {
+        const created = await api.createPipeline(payload);
+        setItems((p) => [created, ...p]);
+        toast.success("Deal added");
+      }
+      setOpen(false); reset();
+    } catch (err) { console.error(err); toast.error("Save failed"); }
   };
 
   const remove = async (id) => {
     if (!window.confirm("Delete this deal?")) return;
-    try { await api.deletePipeline(id); setItems((p) => p.filter((i) => i.id !== id)); }
+    try { await api.deletePipeline(id); setItems((p) => p.filter((i) => i.id !== id)); toast.success("Deal deleted"); }
     catch (e) { toast.error("Delete failed"); }
   };
 
@@ -43,40 +58,56 @@ export default function Pipeline() {
     if (!draggingId) return;
     const target = items.find((i) => i.id === draggingId);
     if (!target || target.stage === stage) { setDraggingId(null); return; }
-    // optimistic
     setItems((p) => p.map((i) => i.id === draggingId ? { ...i, stage } : i));
     setDraggingId(null);
     try { await api.updatePipeline(target.id, { stage }); }
     catch (e) { toast.error("Move failed"); load(); }
   };
 
-  const totalByStage = (stage) => items.filter((i) => i.stage === stage).reduce((sum, i) => sum + (i.value || 0), 0);
+  const totalValue = items.filter(i => i.stage !== 'lost').reduce((s, i) => s + (i.value || 0), 0);
+  const byStage = COLUMNS.reduce((acc, col) => {
+    acc[col.id] = items.filter(i => i.stage === col.id).reduce((s, i) => s + (i.value || 0), 0);
+    return acc;
+  }, {});
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <p className="font-mono text-[10px] tracking-widest uppercase text-[var(--muted)]">Drag deals between stages to update.</p>
-        <button data-testid={DASH.pipelineAddBtn} onClick={() => setOpen(true)} className="dash-btn inline-flex items-center gap-1.5"><Plus className="w-4 h-4" /> Add Deal</button>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <p className="font-mono text-[10px] tracking-widest uppercase text-[var(--muted)]">{items.length} {items.length === 1 ? "deal" : "deals"}</p>
+          <p className="text-[var(--ink-2)] text-sm mt-1">Visualize your sales process. Drag and drop deals to update their stage.</p>
+        </div>
+        <button data-testid={DASH.pipelineAddBtn} onClick={openCreate} className="dash-btn inline-flex items-center gap-1.5"><Plus className="w-4 h-4" /> Add Deal</button>
       </div>
 
-      <div data-testid={DASH.pipelineBoard} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3 overflow-x-auto">
-        {STAGES.map((s) => (
+      {/* Value Summary Bar */}
+      <div className="dash-card p-4 flex items-center justify-between overflow-x-auto gap-6 whitespace-nowrap">
+        <div className="pr-6 border-r border-[var(--line)]">
+          <p className="font-mono text-[10px] tracking-widest uppercase text-[var(--muted)]">Total Pipeline</p>
+          <p className="font-mono text-xl text-[var(--ink)] mt-1">${totalValue.toLocaleString()}</p>
+        </div>
+        {COLUMNS.map(col => (
+          <div key={col.id} className="min-w-[120px]">
+            <p className="font-mono text-[10px] tracking-widest uppercase text-[var(--muted)]">{col.label}</p>
+            <p className="font-mono text-lg text-[var(--ink-2)] mt-1">${(byStage[col.id] || 0).toLocaleString()}</p>
+          </div>
+        ))}
+      </div>
+
+      <div data-testid={DASH.pipelineBoard} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        {COLUMNS.map((col) => (
           <div
-            key={s.id}
+            key={col.id}
             className="kanban-col p-3"
             onDragOver={(e) => e.preventDefault()}
-            onDrop={() => onDrop(s.id)}
+            onDrop={() => onDrop(col.id)}
           >
-            <div className="flex items-center justify-between px-1 mb-3">
-              <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: s.color }} />
-                <span className="text-[var(--ink)] text-sm font-medium">{s.label}</span>
-                <span className="text-[var(--muted)] text-xs font-mono">{items.filter((i) => i.stage === s.id).length}</span>
-              </div>
-              <span className="font-mono text-[10px] text-[var(--muted)]">${totalByStage(s.id).toLocaleString()}</span>
+            <div className="flex items-center justify-between mb-3 px-1">
+              <span className="text-[var(--ink)] text-sm font-medium">{col.label}</span>
+              <span className="text-[var(--muted)] text-xs font-mono">{items.filter((i) => i.stage === col.id).length}</span>
             </div>
             <div className="space-y-2 min-h-[100px]">
-              {items.filter((i) => i.stage === s.id).map((i) => (
+              {items.filter((i) => i.stage === col.id).map((i) => (
                 <div
                   key={i.id}
                   draggable
@@ -86,16 +117,20 @@ export default function Pipeline() {
                 >
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-[var(--ink)] text-sm font-medium leading-snug">{i.title}</p>
-                    <button onClick={() => remove(i.id)} className="opacity-0 group-hover:opacity-100 text-[var(--muted)] hover:text-[#7a3a23]"><Trash2 className="w-3.5 h-3.5" /></button>
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
+                      <button onClick={() => openEdit(i)} className="text-[var(--ink-2)] hover:text-[var(--ink)]"><Edit3 className="w-3.5 h-3.5" /></button>
+                      <button onClick={() => remove(i.id)} className="text-[var(--muted)] hover:text-[#7a3a23]"><Trash2 className="w-3.5 h-3.5" /></button>
+                    </div>
                   </div>
                   {i.client && <p className="text-[var(--muted)] text-xs mt-1">{i.client}</p>}
                   <div className="mt-3 flex items-center justify-between">
-                    <span className="font-mono text-[11px] text-[var(--ink-2)]">${(i.value || 0).toLocaleString()}</span>
-                    {i.due_date && <span className="font-mono text-[10px] text-[var(--muted)]">{i.due_date}</span>}
+                    <span className="text-[var(--ink)] font-mono text-xs">${(i.value || 0).toLocaleString()}</span>
+                    {i.owner && <span className="w-6 h-6 rounded-full bg-[var(--paper-2)] text-[var(--ink-2)] border border-[var(--line)] flex items-center justify-center text-[10px] font-medium" title={i.owner}>{i.owner.charAt(0).toUpperCase()}</span>}
                   </div>
+                  {i.due_date && <p className="mt-2 font-mono text-[9px] text-[var(--muted)]">Due: {i.due_date}</p>}
                 </div>
               ))}
-              {items.filter((i) => i.stage === s.id).length === 0 && (
+              {items.filter((i) => i.stage === col.id).length === 0 && (
                 <div className="text-[var(--muted)] text-xs text-center py-6 border border-dashed border-[var(--line)] rounded-lg">Drop here</div>
               )}
             </div>
@@ -103,32 +138,55 @@ export default function Pipeline() {
         ))}
       </div>
 
+      {/* Slide-over */}
       {open && (
         <div className="fixed inset-0 z-50">
           <div className="absolute inset-0 bg-[var(--ink)]/40 backdrop-blur-sm" onClick={() => setOpen(false)} />
           <div className="absolute right-0 top-0 bottom-0 w-full max-w-md bg-white border-l border-[var(--line)] p-6 overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="font-display text-3xl text-[var(--ink)]">New deal</h3>
+              <div>
+                <p className="font-mono text-[10px] tracking-widest uppercase text-[var(--muted)]">{editing ? "Edit deal" : "New deal"}</p>
+                <h3 className="font-display text-3xl text-[var(--ink)] mt-1">{editing ? editing.title : "Deal details"}</h3>
+              </div>
               <button onClick={() => setOpen(false)} className="w-8 h-8 rounded-lg border border-[var(--line)] flex items-center justify-center"><X className="w-4 h-4" /></button>
             </div>
-            <form onSubmit={create} className="space-y-3">
-              <div className="grid gap-1"><label className="font-mono text-[10px] uppercase text-[var(--muted)] tracking-widest">Title *</label><input data-testid={DASH.pipelineFormTitle} className="dash-input" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
-              <div className="grid gap-1"><label className="font-mono text-[10px] uppercase text-[var(--muted)] tracking-widest">Client</label><input data-testid={DASH.pipelineFormClient} className="dash-input" value={form.client} onChange={(e) => setForm({ ...form, client: e.target.value })} /></div>
+            <form onSubmit={save} className="space-y-3">
+              <div className="grid gap-1">
+                <label className="font-mono text-[10px] uppercase text-[var(--muted)] tracking-widest">Title *</label>
+                <input data-testid={DASH.pipelineFormTitle} className="dash-input" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+              </div>
+              <div className="grid gap-1">
+                <label className="font-mono text-[10px] uppercase text-[var(--muted)] tracking-widest">Client</label>
+                <input data-testid={DASH.pipelineFormClient} className="dash-input" value={form.client} onChange={(e) => setForm({ ...form, client: e.target.value })} />
+              </div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="grid gap-1"><label className="font-mono text-[10px] uppercase text-[var(--muted)] tracking-widest">Value</label><input data-testid={DASH.pipelineFormValue} type="number" className="dash-input" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} /></div>
-                <div className="grid gap-1"><label className="font-mono text-[10px] uppercase text-[var(--muted)] tracking-widest">Stage</label>
+                <div className="grid gap-1">
+                  <label className="font-mono text-[10px] uppercase text-[var(--muted)] tracking-widest">Value</label>
+                  <input data-testid={DASH.pipelineFormValue} type="number" className="dash-input" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} />
+                </div>
+                <div className="grid gap-1">
+                  <label className="font-mono text-[10px] uppercase text-[var(--muted)] tracking-widest">Stage</label>
                   <select data-testid={DASH.pipelineFormStage} className="dash-input" value={form.stage} onChange={(e) => setForm({ ...form, stage: e.target.value })}>
-                    {STAGES.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+                    {COLUMNS.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
                   </select>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="grid gap-1"><label className="font-mono text-[10px] uppercase text-[var(--muted)] tracking-widest">Owner</label><input className="dash-input" value={form.owner} onChange={(e) => setForm({ ...form, owner: e.target.value })} /></div>
-                <div className="grid gap-1"><label className="font-mono text-[10px] uppercase text-[var(--muted)] tracking-widest">Due date</label><input type="date" className="dash-input" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} /></div>
+                <div className="grid gap-1">
+                  <label className="font-mono text-[10px] uppercase text-[var(--muted)] tracking-widest">Owner</label>
+                  <input className="dash-input" value={form.owner} onChange={(e) => setForm({ ...form, owner: e.target.value })} />
+                </div>
+                <div className="grid gap-1">
+                  <label className="font-mono text-[10px] uppercase text-[var(--muted)] tracking-widest">Due Date</label>
+                  <input type="date" className="dash-input" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} />
+                </div>
               </div>
-              <div className="grid gap-1"><label className="font-mono text-[10px] uppercase text-[var(--muted)] tracking-widest">Notes</label><textarea rows={4} className="dash-input" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
+              <div className="grid gap-1">
+                <label className="font-mono text-[10px] uppercase text-[var(--muted)] tracking-widest">Notes</label>
+                <textarea rows={4} className="dash-input" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+              </div>
               <div className="pt-3 flex gap-2">
-                <button data-testid={DASH.pipelineFormSubmit} type="submit" className="dash-btn flex-1">Create deal</button>
+                <button data-testid={DASH.pipelineFormSubmit} type="submit" className="dash-btn flex-1">{editing ? "Save changes" : "Create deal"}</button>
                 <button type="button" onClick={() => setOpen(false)} className="dash-btn-ghost">Cancel</button>
               </div>
             </form>

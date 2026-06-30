@@ -1,8 +1,19 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { ArrowUpRight, Activity, Users, DollarSign, CalendarDays, Sparkles, TrendingUp } from "lucide-react";
+import { ArrowUpRight, Activity, Users, DollarSign, CalendarDays, Sparkles, TrendingUp, FolderKanban, Receipt, CheckSquare, FileText, Clock } from "lucide-react";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from "recharts";
 import { Link } from "react-router-dom";
+
+const ACTIVITY = [
+  { time: "2m ago", text: "New lead captured — Mira Castell (Atlas Labs)", type: "lead" },
+  { time: "18m ago", text: "Deal 'Northwind Rebrand' moved to Proposal", type: "pipeline" },
+  { time: "1h ago", text: "Invoice INV-014 marked as Paid ($8,400)", type: "invoice" },
+  { time: "2h ago", text: "Task 'Finalize brand deck' completed by Jonas", type: "task" },
+  { time: "3h ago", text: "Content published: Instagram — Q3 Campaign Hero", type: "content" },
+  { time: "5h ago", text: "Project 'Maven Studio — Web' moved to Review", type: "project" },
+  { time: "1d ago", text: "New note pinned: 'Client positioning framework'", type: "note" },
+  { time: "1d ago", text: "Lead status changed — Devon Park → Qualified", type: "lead" },
+];
 
 export default function Overview() {
   const [stats, setStats] = useState(null);
@@ -19,24 +30,41 @@ export default function Overview() {
     })();
   }, []);
 
-  const cards = [
-    { label: "Pipeline Value",    value: stats ? `$${(stats.pipeline_value_total || 0).toLocaleString()}` : "—", icon: DollarSign },
-    { label: "Total Leads",       value: stats?.total_leads ?? "—", icon: Users },
-    { label: "Pipeline Items",    value: stats?.pipeline_count ?? "—", icon: Activity },
-    { label: "Scheduled Content", value: stats?.content_count ?? "—", icon: CalendarDays },
+  const topCards = [
+    { label: "Pipeline Value", value: stats ? `$${(stats.pipeline_value_total || 0).toLocaleString()}` : "—", icon: DollarSign, to: "/dashboard/pipeline" },
+    { label: "Total Leads", value: stats?.total_leads ?? "—", icon: Users, to: "/dashboard/crm" },
+    { label: "Active Projects", value: stats?.project_count ?? "—", icon: FolderKanban, to: "/dashboard/projects" },
+    { label: "Open Tasks", value: stats?.task_count ?? "—", icon: CheckSquare, to: "/dashboard/tasks" },
+  ];
+
+  const revenueCards = [
+    { label: "Total Invoiced", value: stats ? `$${(stats.invoice_total || 0).toLocaleString()}` : "—" },
+    { label: "Paid", value: stats ? `$${(stats.invoice_paid || 0).toLocaleString()}` : "—" },
+    { label: "Outstanding", value: stats ? `$${(stats.invoice_outstanding || 0).toLocaleString()}` : "—" },
+    { label: "Overdue", value: stats ? `$${(stats.invoice_overdue || 0).toLocaleString()}` : "—" },
+  ];
+
+  const quickActions = [
+    { label: "New Project", to: "/dashboard/projects", icon: FolderKanban },
+    { label: "Create Invoice", to: "/dashboard/invoices", icon: Receipt },
+    { label: "Add Task", to: "/dashboard/tasks", icon: CheckSquare },
+    { label: "Write Note", to: "/dashboard/notes", icon: FileText },
+    { label: "AI Generate", to: "/dashboard/ai-generator", icon: Sparkles },
+    { label: "Schedule Content", to: "/dashboard/calendar", icon: CalendarDays },
   ];
 
   const trendData = Array.from({ length: 14 }).map((_, i) => ({ d: i, v: 10 + Math.sin(i / 2) * 8 + i * 1.4 }));
 
   return (
     <div className="space-y-6">
+      {/* Welcome */}
       <div className="dash-card p-6 lg:p-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div>
           <p className="font-mono text-[10px] tracking-widest uppercase text-[var(--muted)]">Welcome back</p>
           <h2 className="font-display mt-1" style={{ fontSize: "clamp(32px, 4vw, 56px)", fontVariationSettings: "'opsz' 144, 'SOFT' 30", color: "var(--ink)" }}>
             Let's ship something <em style={{ fontVariationSettings: "'opsz' 144, 'SOFT' 80, 'WONK' 1" }}>great</em> today.
           </h2>
-          <p className="text-[var(--muted)] mt-2 max-w-xl text-[15px]">Your operating system at a glance. Add leads, move deals, plan content — the whole studio in one place.</p>
+          <p className="text-[var(--muted)] mt-2 max-w-xl text-[15px]">Your creative agency operating system at a glance. Manage leads, projects, invoices, tasks — everything in one place.</p>
         </div>
         <div className="flex gap-2">
           <Link to="/dashboard/crm" className="dash-btn">Add a Lead <ArrowUpRight className="w-3.5 h-3.5 inline -mt-0.5" /></Link>
@@ -44,23 +72,38 @@ export default function Overview() {
         </div>
       </div>
 
+      {/* Top stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {cards.map((c) => (
-          <div key={c.label} className="dash-card p-5">
+        {topCards.map((c) => (
+          <Link key={c.label} to={c.to} className="dash-card p-5 group hover:shadow-sm transition-shadow">
             <div className="flex items-start justify-between">
               <div>
                 <p className="font-mono text-[10px] tracking-widest uppercase text-[var(--muted)]">{c.label}</p>
                 <p className="font-display mt-2" style={{ fontSize: 36, fontVariationSettings: "'opsz' 144, 'SOFT' 30", color: "var(--ink)" }}>{loading ? "…" : c.value}</p>
               </div>
-              <div className="w-10 h-10 rounded-lg border border-[var(--line-2)] bg-[var(--paper-2)] flex items-center justify-center">
-                <c.icon className="w-4 h-4 text-[var(--ink)]" strokeWidth={1.5} />
+              <div className="w-10 h-10 rounded-lg border border-[var(--line-2)] bg-[var(--paper-2)] flex items-center justify-center group-hover:bg-[var(--ink)] group-hover:text-[var(--paper)] transition-colors">
+                <c.icon className="w-4 h-4" strokeWidth={1.5} />
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 
+      {/* Quick actions */}
+      <div className="dash-card p-5">
+        <p className="font-mono text-[10px] tracking-widest uppercase text-[var(--muted)] mb-3">Quick actions</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+          {quickActions.map((a) => (
+            <Link key={a.label} to={a.to} className="flex flex-col items-center gap-2 rounded-lg border border-[var(--line)] p-3 hover:bg-[var(--paper-2)] transition text-center">
+              <a.icon className="w-5 h-5 text-[var(--ink)]" strokeWidth={1.5} />
+              <span className="text-xs text-[var(--ink-2)]">{a.label}</span>
+            </Link>
+          ))}
+        </div>
+      </div>
+
       <div className="grid lg:grid-cols-3 gap-4">
+        {/* Lead momentum chart */}
         <div className="dash-card p-5 lg:col-span-2">
           <div className="flex items-center justify-between">
             <p className="font-mono text-[10px] tracking-widest uppercase text-[var(--muted)]">Lead momentum</p>
@@ -83,6 +126,8 @@ export default function Overview() {
             </ResponsiveContainer>
           </div>
         </div>
+
+        {/* Pipeline by stage */}
         <div className="dash-card p-5">
           <p className="font-mono text-[10px] tracking-widest uppercase text-[var(--muted)]">Pipeline by stage</p>
           <div className="mt-4 space-y-3">
@@ -106,6 +151,44 @@ export default function Overview() {
         </div>
       </div>
 
+      <div className="grid lg:grid-cols-2 gap-4">
+        {/* Revenue snapshot */}
+        <div className="dash-card p-5">
+          <div className="flex items-center justify-between mb-4">
+            <p className="font-mono text-[10px] tracking-widest uppercase text-[var(--muted)]">Revenue snapshot</p>
+            <Link to="/dashboard/invoices" className="text-xs text-[var(--ink-2)] hover:text-[var(--ink)]">All invoices →</Link>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {revenueCards.map((c) => (
+              <div key={c.label} className="border border-[var(--line)] rounded-lg p-3">
+                <p className="font-mono text-[10px] tracking-widest uppercase text-[var(--muted)]">{c.label}</p>
+                <p className="font-display mt-1" style={{ fontSize: 24, fontVariationSettings: "'opsz' 144, 'SOFT' 30", color: "var(--ink)" }}>{loading ? "…" : c.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Activity feed */}
+        <div className="dash-card p-5">
+          <div className="flex items-center justify-between mb-4">
+            <p className="font-mono text-[10px] tracking-widest uppercase text-[var(--muted)]">Recent activity</p>
+            <span className="flex items-center gap-1 text-[10px] font-mono text-[var(--muted)]"><Clock className="w-3 h-3" /> Live feed</span>
+          </div>
+          <div className="space-y-0 divide-y divide-[var(--line)]">
+            {ACTIVITY.map((a, i) => (
+              <div key={i} className="py-2.5 flex items-start gap-3">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--ink)] mt-1.5 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-[var(--ink-2)] leading-snug">{a.text}</p>
+                  <p className="font-mono text-[10px] text-[var(--muted)] mt-0.5">{a.time}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Recent leads */}
       <div className="dash-card p-5">
         <div className="flex items-center justify-between mb-4">
           <p className="font-mono text-[10px] tracking-widest uppercase text-[var(--muted)]">Recent Leads</p>

@@ -2,7 +2,27 @@ import { useEffect, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowUpRight, ArrowDown } from "lucide-react";
 import { LANDING } from "@/constants/testIds";
+import { Canvas } from "@react-three/fiber";
+import { Sparkles, Stars } from "@react-three/drei";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import GridGrain from "./GridGrain";
+
+gsap.registerPlugin(ScrollTrigger);
+
+const WebGLBackground = () => {
+  return (
+    <div className="absolute inset-0 z-0 pointer-events-none" style={{ opacity: 0.6 }}>
+      <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
+        {/* We won't set a background color here to let the underlying var(--paper) show through */}
+        <ambientLight intensity={0.5} />
+        {/* Starfield with var(--ink) colored stars or subtle colors to match light/dark mode */}
+        <Stars radius={100} depth={50} count={3000} factor={3} saturation={0} fade speed={1.5} color="#888" />
+        <Sparkles count={150} scale={12} size={1.5} speed={0.4} opacity={0.3} color="#555" />
+      </Canvas>
+    </div>
+  );
+};
 
 export default function Hero() {
   const titleRef = useRef(null);
@@ -35,148 +55,169 @@ export default function Hero() {
     return () => { window.removeEventListener("mousemove", onMove); if (raf) cancelAnimationFrame(raf); };
   }, []);
 
+  // GSAP Scroll Animations
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.to(".hero-content-wrapper", {
+        y: 100,
+        opacity: 0,
+        ease: "none",
+        scrollTrigger: {
+          trigger: wrapRef.current,
+          start: "top top",
+          end: "bottom top",
+          scrub: true,
+        },
+      });
+    }, wrapRef);
+    return () => ctx.revert();
+  }, []);
+
   // Scroll-linked parallax for layers
-  const { scrollY } = useScroll();
-  const yPhoto = useTransform(scrollY, [0, 800], [0, -120]);
-  const yLabels = useTransform(scrollY, [0, 800], [0, 60]);
-  const yMain = useTransform(scrollY, [0, 800], [0, 90]);
+  const { scrollYProgress } = useScroll({ target: wrapRef, offset: ["start start", "end start"] });
+  const yPhoto = useTransform(scrollYProgress, [0, 1], [0, -120]);
+  const yLabels = useTransform(scrollYProgress, [0, 1], [0, 60]);
+  const yMain = useTransform(scrollYProgress, [0, 1], [0, 90]);
 
   return (
     <section
       ref={wrapRef}
       data-testid={LANDING.hero}
-      className="relative min-h-[100vh] w-full overflow-hidden bg-[var(--paper)] grain"
+      className="relative min-h-[100dvh] md:min-h-[100vh] w-full overflow-hidden bg-[var(--paper)] grain"
     >
+      <WebGLBackground />
       {/* Grid background */}
-      <div className="absolute inset-0 bg-grid pointer-events-none" />
+      <div className="absolute inset-0 bg-grid pointer-events-none z-[1]" />
       {/* subtle vignette */}
-      <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(120% 80% at 50% 35%, transparent 50%, rgba(20,19,15,0.10) 100%)" }} />
+      <div className="absolute inset-0 pointer-events-none z-[1]" style={{ background: "radial-gradient(120% 80% at 50% 35%, transparent 50%, rgba(20,19,15,0.10) 100%)" }} />
 
-      {/* Top eyebrow row */}
-      <motion.div
-        initial={{ opacity: 0, y: 14 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.35 }}
-        className="relative z-10 pt-[120px] lg:pt-[140px]"
-      >
-        <div className="mx-auto max-w-[1380px] px-6 lg:px-10 flex items-center justify-between">
-          <span className="eyebrow">A design-first studio — est. 2021</span>
-          <span className="eyebrow hidden md:inline">Lisbon · New York · Remote</span>
-        </div>
-      </motion.div>
+      <div className="hero-content-wrapper relative z-10 pt-24 lg:pt-[140px]">
+        {/* Top eyebrow row */}
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.35 }}
+          className="relative"
+        >
+          <div className="mx-auto max-w-[1380px] px-6 lg:px-10 flex items-center justify-between">
+            <span className="eyebrow">A design-first studio — est. 2021</span>
+            <span className="eyebrow hidden md:inline">Lisbon · New York · Remote</span>
+          </div>
+        </motion.div>
 
-      {/* Main grid */}
-      <motion.div
-        style={{ y: yMain }}
-        className="relative z-10 mx-auto max-w-[1380px] px-6 lg:px-10 pt-14 lg:pt-20 pb-24"
-      >
-        <div className="grid lg:grid-cols-12 gap-10 items-end">
-          {/* Headline */}
-          <div className="lg:col-span-8">
-            <motion.h1
-              ref={titleRef}
-              initial={{ opacity: 0, y: 24 }}
+        {/* Main grid */}
+        <motion.div
+          style={{ y: yMain }}
+          className="relative mx-auto max-w-[1380px] px-6 lg:px-10 pt-14 lg:pt-20 pb-24"
+        >
+          <div className="grid lg:grid-cols-12 gap-10 items-end">
+            {/* Headline */}
+            <div className="lg:col-span-8">
+              <motion.h1
+                ref={titleRef}
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: 0.55 }}
+                className="headline"
+                style={{ fontSize: "clamp(64px, 10.5vw, 196px)", willChange: "transform", transition: "transform 0.45s cubic-bezier(0.16,1,0.3,1)" }}
+              >
+                The <em>art</em> of
+                <br/>
+                building <em>brands</em>
+                <br/>
+                that <em>compound.</em>
+              </motion.h1>
+            </div>
+
+            {/* Right column — small descriptor + meta */}
+            <motion.div
+              style={{ y: yLabels }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: 0.55 }}
-              className="headline"
-              style={{ fontSize: "clamp(64px, 10.5vw, 196px)", willChange: "transform", transition: "transform 0.45s cubic-bezier(0.16,1,0.3,1)" }}
+              transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1], delay: 0.9 }}
+              className="lg:col-span-4 lg:pl-6 lg:pb-6"
             >
-              The <em>art</em> of
-              <br/>
-              building <em>brands</em>
-              <br/>
-              that <em>compound.</em>
-            </motion.h1>
+              <p className="lede max-w-sm">
+                We design brands, websites and operating systems for founders who refuse to look like everyone else.
+              </p>
+              <div className="mt-8 flex items-center gap-3 flex-wrap">
+                <a href="#contact" data-testid={LANDING.heroPrimaryCta} className="cursor-target btn btn-primary" data-cursor="hover">
+                  Start a project <ArrowUpRight className="w-4 h-4" />
+                </a>
+                <a href="#work" data-testid={LANDING.heroSecondaryCta} className="cursor-target btn btn-ghost" data-cursor="hover">
+                  See the work
+                </a>
+              </div>
+            </motion.div>
           </div>
 
-          {/* Right column — small descriptor + meta */}
-          <motion.div
-            style={{ y: yLabels }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1], delay: 0.9 }}
-            className="lg:col-span-4 lg:pl-6 lg:pb-6"
-          >
-            <p className="lede max-w-sm">
-              We design brands, websites and operating systems for founders who refuse to look like everyone else.
-            </p>
-            <div className="mt-8 flex items-center gap-3 flex-wrap">
-              <a href="#contact" data-testid={LANDING.heroPrimaryCta} className="btn btn-primary" data-cursor="hover">
-                Start a project <ArrowUpRight className="w-4 h-4" />
-              </a>
-              <a href="#work" data-testid={LANDING.heroSecondaryCta} className="btn btn-ghost" data-cursor="hover">
-                See the work
-              </a>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Lower row — hero photo + meta */}
-        <div className="mt-16 lg:mt-24 grid lg:grid-cols-12 gap-10 items-end">
-          <motion.div
-            style={{ y: yPhoto }}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: 1.05 }}
-            className="lg:col-span-7"
-          >
-            <div ref={photoWrap} className="perspective-2000">
-              <div
-                ref={photoRef}
-                className="relative aspect-[4/3] rounded-[18px] overflow-hidden border border-[var(--line-2)] bg-[var(--paper-2)]"
-                style={{ transition: "transform 0.45s cubic-bezier(0.16,1,0.3,1)", willChange: "transform" }}
-              >
-                <img
-                  src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=2000&q=88&auto=format&fit=crop"
-                  alt="Studio interior"
-                  className="w-full h-full object-cover"
-                  loading="eager"
-                />
-                <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(180deg, transparent 55%, rgba(20,19,15,0.45) 100%)" }} />
-                <div className="absolute bottom-5 left-5 right-5 flex items-end justify-between text-[var(--paper)]">
-                  <div>
-                    <p className="font-mono text-[10px] tracking-[0.25em] uppercase opacity-80">Selected work 2025</p>
-                    <p className="font-display text-2xl mt-1" style={{ fontVariationSettings: "'opsz' 144, 'SOFT' 30" }}>Northwind · Brand & Web</p>
+          {/* Lower row — hero photo + meta */}
+          <div className="mt-8 lg:mt-24 grid lg:grid-cols-12 gap-10 items-end">
+            <motion.div
+              style={{ y: yPhoto }}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: 1.05 }}
+              className="lg:col-span-7"
+            >
+              <div ref={photoWrap} className="perspective-2000 cursor-target">
+                <div
+                  ref={photoRef}
+                  className="relative aspect-[4/3] rounded-[18px] overflow-hidden border border-[var(--line-2)] bg-[var(--paper-2)]"
+                  style={{ transition: "transform 0.45s cubic-bezier(0.16,1,0.3,1)", willChange: "transform" }}
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=2000&q=88&auto=format&fit=crop"
+                    alt="Studio interior"
+                    className="w-full h-full object-cover"
+                    loading="eager"
+                  />
+                  <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(180deg, transparent 55%, rgba(20,19,15,0.45) 100%)" }} />
+                  <div className="absolute bottom-5 left-5 right-5 flex items-end justify-between text-[var(--paper)]">
+                    <div>
+                      <p className="font-mono text-[10px] tracking-[0.25em] uppercase opacity-80">Selected work 2025</p>
+                      <p className="font-display text-2xl mt-1" style={{ fontVariationSettings: "'opsz' 144, 'SOFT' 30" }}>Northwind · Brand & Web</p>
+                    </div>
+                    <ArrowUpRight className="w-5 h-5" />
                   </div>
-                  <ArrowUpRight className="w-5 h-5" />
                 </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: 1.2 }}
-            className="lg:col-span-5 space-y-8"
-          >
-            <div>
-              <p className="eyebrow">— What we make</p>
-              <ul className="mt-3 space-y-1.5 font-sans text-[var(--ink)] text-[20px] leading-snug">
-                <li className="flex items-baseline gap-3"><span className="font-mono text-xs text-[var(--muted)]">01</span> Brand identity systems</li>
-                <li className="flex items-baseline gap-3"><span className="font-mono text-xs text-[var(--muted)]">02</span> Editorial websites</li>
-                <li className="flex items-baseline gap-3"><span className="font-mono text-xs text-[var(--muted)]">03</span> Mobile & product design</li>
-                <li className="flex items-baseline gap-3"><span className="font-mono text-xs text-[var(--muted)]">04</span> Motion & content</li>
-                <li className="flex items-baseline gap-3"><span className="font-mono text-xs text-[var(--muted)]">05</span> Internal operating systems</li>
-              </ul>
-            </div>
-            <div className="flex items-center justify-between border-t border-[var(--line)] pt-5">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: 1.2 }}
+              className="lg:col-span-5 space-y-8"
+            >
               <div>
-                <p className="eyebrow">Selected clients</p>
-                <p className="font-display text-xl mt-1" style={{ fontVariationSettings: "'opsz' 144, 'SOFT' 30" }}>Northwind · Atlas · Halcyon · Maven</p>
+                <p className="eyebrow">— What we make</p>
+                <ul className="mt-3 space-y-1.5 font-sans text-[var(--ink)] text-[20px] leading-snug">
+                  <li className="flex items-baseline gap-3 cursor-target w-max"><span className="font-mono text-xs text-[var(--muted)]">01</span> Brand identity systems</li>
+                  <li className="flex items-baseline gap-3 cursor-target w-max"><span className="font-mono text-xs text-[var(--muted)]">02</span> Editorial websites</li>
+                  <li className="flex items-baseline gap-3 cursor-target w-max"><span className="font-mono text-xs text-[var(--muted)]">03</span> Mobile & product design</li>
+                  <li className="flex items-baseline gap-3 cursor-target w-max"><span className="font-mono text-xs text-[var(--muted)]">04</span> Motion & content</li>
+                  <li className="flex items-baseline gap-3 cursor-target w-max"><span className="font-mono text-xs text-[var(--muted)]">05</span> Internal operating systems</li>
+                </ul>
               </div>
-              <p className="font-mono text-[10px] text-[var(--muted)] tracking-widest">+42 more</p>
-            </div>
-          </motion.div>
-        </div>
-      </motion.div>
+              <div className="flex items-center justify-between border-t border-[var(--line)] pt-5">
+                <div>
+                  <p className="eyebrow">Selected clients</p>
+                  <p className="font-display text-xl mt-1" style={{ fontVariationSettings: "'opsz' 144, 'SOFT' 30" }}>Northwind · Atlas · Halcyon · Maven</p>
+                </div>
+                <p className="font-mono text-[10px] text-[var(--muted)] tracking-widest">+42 more</p>
+              </div>
+            </motion.div>
+          </div>
+        </motion.div>
+      </div>
 
       {/* Scroll indicator */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.8, duration: 1 }}
-        className="absolute bottom-7 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2"
+        className="absolute bottom-7 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 cursor-target"
       >
         <span className="font-mono text-[10px] tracking-[0.3em] text-[var(--muted)]">SCROLL</span>
         <motion.div animate={{ y: [0, 6, 0] }} transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}>

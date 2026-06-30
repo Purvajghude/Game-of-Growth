@@ -21,7 +21,7 @@ export default function Brutalism() {
       id="work"
       data-testid={LANDING.sectionBrutalism}
       ref={ref}
-      className="relative bg-[var(--paper)] py-28 lg:py-40 grain-soft overflow-hidden"
+      className="relative bg-[var(--paper)] py-16 lg:py-40 grain-soft overflow-hidden"
     >
       <div className="absolute inset-0 bg-grid pointer-events-none" />
       <div className="relative mx-auto max-w-[1380px] px-6 lg:px-10">

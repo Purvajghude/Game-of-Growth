@@ -7,6 +7,10 @@ export const DASH = {
   navCalendar: "dash-nav-calendar",
   navAi: "dash-nav-ai",
   navSettings: "dash-nav-settings",
+  navProjects: "dash-nav-projects",
+  navInvoices: "dash-nav-invoices",
+  navTasks: "dash-nav-tasks",
+  navNotes: "dash-nav-notes",
   // CRM
   crmAddBtn: "dash-crm-add",
   crmTable: "dash-crm-table",
@@ -34,4 +38,24 @@ export const DASH = {
   aiPrompt: "dash-ai-prompt",
   aiGenerate: "dash-ai-generate",
   aiOutput: "dash-ai-output",
+  // Projects
+  projectsAddBtn: "dash-projects-add",
+  projectsTable: "dash-projects-table",
+  projectsFormTitle: "dash-projects-form-title",
+  projectsFormClient: "dash-projects-form-client",
+  projectsFormSubmit: "dash-projects-form-submit",
+  // Invoices
+  invoicesAddBtn: "dash-invoices-add",
+  invoicesTable: "dash-invoices-table",
+  invoicesFormClient: "dash-invoices-form-client",
+  invoicesFormSubmit: "dash-invoices-form-submit",
+  // Tasks
+  tasksAddBtn: "dash-tasks-add",
+  tasksBoard: "dash-tasks-board",
+  tasksFormTitle: "dash-tasks-form-title",
+  tasksFormSubmit: "dash-tasks-form-submit",
+  // Notes
+  notesAddBtn: "dash-notes-add",
+  notesFormTitle: "dash-notes-form-title",
+  notesFormSubmit: "dash-notes-form-submit",
 };

@@ -45,7 +45,7 @@ function Step({ s, i }) {
 
 export default function Process() {
   return (
-    <section id="process" data-testid={LANDING.sectionProcess} className="relative bg-[var(--paper)] py-28 lg:py-40 grain-soft">
+    <section id="process" data-testid={LANDING.sectionProcess} className="relative bg-[var(--paper)] py-16 lg:py-40 grain-soft">
       <div className="absolute inset-0 bg-grid pointer-events-none" />
       <div className="relative mx-auto max-w-[1280px] px-6 lg:px-10">
         <div className="text-center mb-20">

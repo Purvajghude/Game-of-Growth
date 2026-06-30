@@ -131,7 +131,7 @@ Built as separate components with distinct local aesthetics:
 ### Phase 4+ — Integrations (OAuth + real AI)
 - **Google OAuth**: implement secure login and gate `/dashboard`.
 - **Real AI**:
-  - wire AI Generator to a real LLM (Emergent universal key: OpenAI/Anthropic/Gemini)
+  - wire AI Generator to a real LLM (Claude universal key: OpenAI/Anthropic/Gemini)
   - prompt templates + history + export
   - optional brand-voice memory/knowledge base later
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import Cursor from "@/components/landing/Cursor";
+import TargetCursor from "@/components/landing/TargetCursor";
 import Nav from "@/components/landing/Nav";
 import Hero from "@/components/landing/Hero";
 import Marquee from "@/components/landing/Marquee";
@@ -19,7 +19,7 @@ import Footer from "@/components/landing/Footer";
 export default function Landing() {
   return (
     <div className="min-h-screen bg-[#0a0a0b] text-white overflow-x-hidden">
-      <Cursor />
+      <TargetCursor />
       <Nav />
       <Hero />
       <Marquee />

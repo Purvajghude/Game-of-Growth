@@ -1,15 +1,21 @@
 import { NavLink, Outlet, useLocation, Link } from "react-router-dom";
-import { LayoutDashboard, Users, Kanban, CalendarDays, Sparkles, Settings as SettingsIcon, ArrowLeft, Bell, Search } from "lucide-react";
+import { LayoutDashboard, Users, Kanban, CalendarDays, Sparkles, Settings as SettingsIcon, ArrowLeft, Bell, Search, FolderKanban, Receipt, CheckSquare, FileText } from "lucide-react";
 import { DASH } from "@/constants/testIds";
 import { useEffect } from "react";
 
-const NAV = [
-  { to: "/dashboard",              label: "Overview",      icon: LayoutDashboard, end: true, testId: DASH.navOverview },
+const NAV_WORK = [
+  { to: "/dashboard",          label: "Overview",      icon: LayoutDashboard, end: true, testId: DASH.navOverview },
+  { to: "/dashboard/projects", label: "Projects",      icon: FolderKanban,    testId: DASH.navProjects },
+  { to: "/dashboard/pipeline", label: "Pipeline",      icon: Kanban,          testId: DASH.navPipeline },
+];
+
+const NAV_OPS = [
   { to: "/dashboard/crm",          label: "Lead CRM",      icon: Users,           testId: DASH.navCrm },
-  { to: "/dashboard/pipeline",     label: "Pipeline",      icon: Kanban,          testId: DASH.navPipeline },
+  { to: "/dashboard/tasks",        label: "Team Tasks",    icon: CheckSquare,     testId: DASH.navTasks },
   { to: "/dashboard/calendar",     label: "Content",       icon: CalendarDays,    testId: DASH.navCalendar },
+  { to: "/dashboard/notes",        label: "Notes",         icon: FileText,        testId: DASH.navNotes },
   { to: "/dashboard/ai-generator", label: "AI Generator",  icon: Sparkles,        testId: DASH.navAi },
-  { to: "/dashboard/settings",     label: "Settings",      icon: SettingsIcon,    testId: DASH.navSettings },
+  { to: "/dashboard/invoices",     label: "Invoices",      icon: Receipt,         testId: DASH.navInvoices },
 ];
 
 export default function DashboardLayout() {
@@ -25,17 +31,21 @@ export default function DashboardLayout() {
 
   const titleMap = {
     "/dashboard": "Overview",
-    "/dashboard/crm": "Lead CRM",
+    "/dashboard/projects": "Projects",
     "/dashboard/pipeline": "Pipeline",
+    "/dashboard/crm": "Lead CRM",
+    "/dashboard/tasks": "Team Tasks",
     "/dashboard/calendar": "Content Calendar",
+    "/dashboard/notes": "Notes",
     "/dashboard/ai-generator": "AI Content Generator",
+    "/dashboard/invoices": "Invoices",
     "/dashboard/settings": "Settings",
   };
   const title = titleMap[loc.pathname] || "Dashboard";
 
   return (
     <div data-testid={DASH.layout} className="dashboard-root dash-root min-h-screen flex" style={{ cursor: 'auto' }}>
-      <aside data-testid={DASH.sideNav} className="dash-side w-[240px] shrink-0 hidden md:flex flex-col">
+      <aside data-testid={DASH.sideNav} className="dash-side w-[240px] shrink-0 hidden md:flex flex-col h-[100dvh] sticky top-0 overflow-y-auto">
         <div className="p-6">
           <Link to="/" className="flex items-center gap-2.5">
             <div className="w-6 h-6 rounded-full bg-[var(--ink)] flex items-center justify-center">
@@ -44,27 +54,70 @@ export default function DashboardLayout() {
             <span className="font-sans font-medium text-[13.5px] text-[var(--ink)]">GoG · OS</span>
           </Link>
         </div>
-        <nav className="flex-1 px-3 space-y-0.5">
-          {NAV.map((n) => (
-            <NavLink
-              key={n.to}
-              to={n.to}
-              end={n.end}
-              data-testid={n.testId}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] transition-all ${
-                  isActive ? "bg-white text-[var(--ink)] border border-[var(--line)] shadow-[0_1px_2px_rgba(0,0,0,0.03)]" : "text-[var(--ink-2)] hover:bg-white/60"
-                }`
-              }
-            >
-              <n.icon className="w-4 h-4" strokeWidth={1.5} />
-              {n.label}
-            </NavLink>
-          ))}
+        
+        <nav className="flex-1 px-3 space-y-6 pb-6">
+          {/* Work Section */}
+          <div>
+            <p className="px-3 mb-2 font-mono text-[10px] tracking-widest uppercase text-[var(--muted)]">Work</p>
+            <div className="space-y-0.5">
+              {NAV_WORK.map((n) => (
+                <NavLink
+                  key={n.to}
+                  to={n.to}
+                  end={n.end}
+                  data-testid={n.testId}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] transition-all ${
+                      isActive ? "bg-white text-[var(--ink)] border border-[var(--line)] shadow-[0_1px_2px_rgba(0,0,0,0.03)]" : "text-[var(--ink-2)] hover:bg-white/60"
+                    }`
+                  }
+                >
+                  <n.icon className="w-4 h-4" strokeWidth={1.5} />
+                  {n.label}
+                </NavLink>
+              ))}
+            </div>
+          </div>
+
+          {/* Operations Section */}
+          <div>
+            <p className="px-3 mb-2 font-mono text-[10px] tracking-widest uppercase text-[var(--muted)]">Operations</p>
+            <div className="space-y-0.5">
+              {NAV_OPS.map((n) => (
+                <NavLink
+                  key={n.to}
+                  to={n.to}
+                  end={n.end}
+                  data-testid={n.testId}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] transition-all ${
+                      isActive ? "bg-white text-[var(--ink)] border border-[var(--line)] shadow-[0_1px_2px_rgba(0,0,0,0.03)]" : "text-[var(--ink-2)] hover:bg-white/60"
+                    }`
+                  }
+                >
+                  <n.icon className="w-4 h-4" strokeWidth={1.5} />
+                  {n.label}
+                </NavLink>
+              ))}
+            </div>
+          </div>
         </nav>
-        <div className="p-3 border-t border-[var(--line)]">
-          <Link to="/" className="flex items-center gap-2 text-[var(--muted)] hover:text-[var(--ink)] text-[12px] px-3 py-2 transition">
-            <ArrowLeft className="w-3.5 h-3.5" /> Back to site
+
+        <div className="p-3 border-t border-[var(--line)] space-y-1">
+          <NavLink
+            to="/dashboard/settings"
+            data-testid={DASH.navSettings}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] transition-all ${
+                isActive ? "bg-white text-[var(--ink)] border border-[var(--line)] shadow-[0_1px_2px_rgba(0,0,0,0.03)]" : "text-[var(--ink-2)] hover:bg-white/60"
+              }`
+            }
+          >
+            <SettingsIcon className="w-4 h-4" strokeWidth={1.5} />
+            Settings
+          </NavLink>
+          <Link to="/" className="flex items-center gap-3 text-[var(--muted)] hover:text-[var(--ink)] text-[13px] px-3 py-2 transition">
+            <ArrowLeft className="w-4 h-4" /> Back to site
           </Link>
         </div>
       </aside>

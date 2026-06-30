@@ -271,6 +271,296 @@ async def list_contact():
     return [_hydrate(d) for d in docs]
 
 
+# ============ Projects ============
+class Project(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
+    client: Optional[str] = ""
+    project_type: str = "Brand"  # Brand | Web | Motion | Strategy | Content | Other
+    status: str = "briefing"  # briefing | in-progress | review | delivered | archived
+    budget: Optional[float] = 0
+    deadline: Optional[str] = None
+    team: Optional[List[str]] = []
+    progress: Optional[int] = 0  # 0-100
+    description: Optional[str] = ""
+    notes: Optional[str] = ""
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ProjectCreate(BaseModel):
+    title: str
+    client: Optional[str] = ""
+    project_type: Optional[str] = "Brand"
+    status: Optional[str] = "briefing"
+    budget: Optional[float] = 0
+    deadline: Optional[str] = None
+    team: Optional[List[str]] = []
+    progress: Optional[int] = 0
+    description: Optional[str] = ""
+    notes: Optional[str] = ""
+
+class ProjectUpdate(BaseModel):
+    title: Optional[str] = None
+    client: Optional[str] = None
+    project_type: Optional[str] = None
+    status: Optional[str] = None
+    budget: Optional[float] = None
+    deadline: Optional[str] = None
+    team: Optional[List[str]] = None
+    progress: Optional[int] = None
+    description: Optional[str] = None
+    notes: Optional[str] = None
+
+
+@api_router.get("/projects", response_model=List[Project])
+async def list_projects():
+    docs = await db.projects.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return [_hydrate(d) for d in docs]
+
+@api_router.post("/projects", response_model=Project)
+async def create_project(payload: ProjectCreate):
+    item = Project(**payload.model_dump())
+    doc = item.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.projects.insert_one(doc)
+    return item
+
+@api_router.patch("/projects/{item_id}", response_model=Project)
+async def update_project(item_id: str, payload: ProjectUpdate):
+    update = {k: v for k, v in payload.model_dump().items() if v is not None}
+    if not update:
+        raise HTTPException(400, "No fields to update")
+    res = await db.projects.find_one_and_update(
+        {"id": item_id}, {"$set": update},
+        return_document=True, projection={"_id": 0}
+    )
+    if not res:
+        raise HTTPException(404, "Project not found")
+    return _hydrate(res)
+
+@api_router.delete("/projects/{item_id}")
+async def delete_project(item_id: str):
+    res = await db.projects.delete_one({"id": item_id})
+    if res.deleted_count == 0:
+        raise HTTPException(404, "Project not found")
+    return {"deleted": True, "id": item_id}
+
+
+# ============ Invoices ============
+class InvoiceLineItem(BaseModel):
+    description: str = ""
+    quantity: float = 1
+    rate: float = 0
+
+class Invoice(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    invoice_number: Optional[str] = ""
+    client: str
+    project: Optional[str] = ""
+    status: str = "draft"  # draft | sent | paid | overdue
+    line_items: List[InvoiceLineItem] = []
+    tax_rate: Optional[float] = 0  # percentage
+    notes: Optional[str] = ""
+    due_date: Optional[str] = None
+    paid_date: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class InvoiceCreate(BaseModel):
+    invoice_number: Optional[str] = ""
+    client: str
+    project: Optional[str] = ""
+    status: Optional[str] = "draft"
+    line_items: Optional[List[InvoiceLineItem]] = []
+    tax_rate: Optional[float] = 0
+    notes: Optional[str] = ""
+    due_date: Optional[str] = None
+
+class InvoiceUpdate(BaseModel):
+    invoice_number: Optional[str] = None
+    client: Optional[str] = None
+    project: Optional[str] = None
+    status: Optional[str] = None
+    line_items: Optional[List[InvoiceLineItem]] = None
+    tax_rate: Optional[float] = None
+    notes: Optional[str] = None
+    due_date: Optional[str] = None
+    paid_date: Optional[str] = None
+
+
+@api_router.get("/invoices", response_model=List[Invoice])
+async def list_invoices():
+    docs = await db.invoices.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return [_hydrate(d) for d in docs]
+
+@api_router.post("/invoices", response_model=Invoice)
+async def create_invoice(payload: InvoiceCreate):
+    item = Invoice(**payload.model_dump())
+    doc = item.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    # serialize line_items
+    doc['line_items'] = [li.model_dump() if hasattr(li, 'model_dump') else li for li in doc.get('line_items', [])]
+    await db.invoices.insert_one(doc)
+    return item
+
+@api_router.patch("/invoices/{item_id}", response_model=Invoice)
+async def update_invoice(item_id: str, payload: InvoiceUpdate):
+    update = {k: v for k, v in payload.model_dump().items() if v is not None}
+    if 'line_items' in update and update['line_items'] is not None:
+        update['line_items'] = [li.model_dump() if hasattr(li, 'model_dump') else li for li in update['line_items']]
+    if not update:
+        raise HTTPException(400, "No fields to update")
+    res = await db.invoices.find_one_and_update(
+        {"id": item_id}, {"$set": update},
+        return_document=True, projection={"_id": 0}
+    )
+    if not res:
+        raise HTTPException(404, "Invoice not found")
+    return _hydrate(res)
+
+@api_router.delete("/invoices/{item_id}")
+async def delete_invoice(item_id: str):
+    res = await db.invoices.delete_one({"id": item_id})
+    if res.deleted_count == 0:
+        raise HTTPException(404, "Invoice not found")
+    return {"deleted": True, "id": item_id}
+
+
+# ============ Tasks ============
+class Task(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
+    assignee: Optional[str] = ""
+    priority: str = "medium"  # low | medium | high | urgent
+    status: str = "todo"  # todo | in-progress | review | done
+    due_date: Optional[str] = None
+    tags: Optional[List[str]] = []
+    description: Optional[str] = ""
+    project: Optional[str] = ""
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class TaskCreate(BaseModel):
+    title: str
+    assignee: Optional[str] = ""
+    priority: Optional[str] = "medium"
+    status: Optional[str] = "todo"
+    due_date: Optional[str] = None
+    tags: Optional[List[str]] = []
+    description: Optional[str] = ""
+    project: Optional[str] = ""
+
+class TaskUpdate(BaseModel):
+    title: Optional[str] = None
+    assignee: Optional[str] = None
+    priority: Optional[str] = None
+    status: Optional[str] = None
+    due_date: Optional[str] = None
+    tags: Optional[List[str]] = None
+    description: Optional[str] = None
+    project: Optional[str] = None
+
+
+@api_router.get("/tasks", response_model=List[Task])
+async def list_tasks():
+    docs = await db.tasks.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return [_hydrate(d) for d in docs]
+
+@api_router.post("/tasks", response_model=Task)
+async def create_task(payload: TaskCreate):
+    item = Task(**payload.model_dump())
+    doc = item.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.tasks.insert_one(doc)
+    return item
+
+@api_router.patch("/tasks/{item_id}", response_model=Task)
+async def update_task(item_id: str, payload: TaskUpdate):
+    update = {k: v for k, v in payload.model_dump().items() if v is not None}
+    if not update:
+        raise HTTPException(400, "No fields to update")
+    res = await db.tasks.find_one_and_update(
+        {"id": item_id}, {"$set": update},
+        return_document=True, projection={"_id": 0}
+    )
+    if not res:
+        raise HTTPException(404, "Task not found")
+    return _hydrate(res)
+
+@api_router.delete("/tasks/{item_id}")
+async def delete_task(item_id: str):
+    res = await db.tasks.delete_one({"id": item_id})
+    if res.deleted_count == 0:
+        raise HTTPException(404, "Task not found")
+    return {"deleted": True, "id": item_id}
+
+
+# ============ Notes ============
+class Note(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
+    content: Optional[str] = ""
+    category: Optional[str] = "General"
+    project: Optional[str] = ""
+    pinned: Optional[bool] = False
+    tags: Optional[List[str]] = []
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class NoteCreate(BaseModel):
+    title: str
+    content: Optional[str] = ""
+    category: Optional[str] = "General"
+    project: Optional[str] = ""
+    pinned: Optional[bool] = False
+    tags: Optional[List[str]] = []
+
+class NoteUpdate(BaseModel):
+    title: Optional[str] = None
+    content: Optional[str] = None
+    category: Optional[str] = None
+    project: Optional[str] = None
+    pinned: Optional[bool] = None
+    tags: Optional[List[str]] = None
+
+
+@api_router.get("/notes", response_model=List[Note])
+async def list_notes():
+    docs = await db.notes.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return [_hydrate(d) for d in docs]
+
+@api_router.post("/notes", response_model=Note)
+async def create_note(payload: NoteCreate):
+    item = Note(**payload.model_dump())
+    doc = item.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    doc['updated_at'] = doc['updated_at'].isoformat()
+    await db.notes.insert_one(doc)
+    return item
+
+@api_router.patch("/notes/{item_id}", response_model=Note)
+async def update_note(item_id: str, payload: NoteUpdate):
+    update = {k: v for k, v in payload.model_dump().items() if v is not None}
+    if not update:
+        raise HTTPException(400, "No fields to update")
+    update['updated_at'] = datetime.now(timezone.utc).isoformat()
+    res = await db.notes.find_one_and_update(
+        {"id": item_id}, {"$set": update},
+        return_document=True, projection={"_id": 0}
+    )
+    if not res:
+        raise HTTPException(404, "Note not found")
+    return _hydrate(res)
+
+@api_router.delete("/notes/{item_id}")
+async def delete_note(item_id: str):
+    res = await db.notes.delete_one({"id": item_id})
+    if res.deleted_count == 0:
+        raise HTTPException(404, "Note not found")
+    return {"deleted": True, "id": item_id}
+
+
 # ============ Stats ============
 @api_router.get("/stats")
 async def stats():
@@ -279,6 +569,9 @@ async def stats():
     won = await db.leads.count_documents({"status": "won"})
     pipeline_count = await db.pipeline.count_documents({})
     content_count = await db.content.count_documents({})
+    project_count = await db.projects.count_documents({})
+    task_count = await db.tasks.count_documents({})
+    note_count = await db.notes.count_documents({})
     # sum pipeline values per stage
     stages = ["discovery", "proposal", "negotiation", "won", "lost"]
     by_stage = {}
@@ -290,6 +583,22 @@ async def stats():
         total_value += v
     for s in stages:
         by_stage.setdefault(s, 0)
+    # invoice totals
+    invoice_total = 0
+    invoice_paid = 0
+    invoice_outstanding = 0
+    invoice_overdue = 0
+    async for d in db.invoices.find({}, {"_id": 0, "status": 1, "line_items": 1, "tax_rate": 1}):
+        subtotal = sum(li.get("quantity", 1) * li.get("rate", 0) for li in d.get("line_items", []))
+        tax = subtotal * (float(d.get("tax_rate") or 0) / 100)
+        total = subtotal + tax
+        invoice_total += total
+        if d.get("status") == "paid":
+            invoice_paid += total
+        elif d.get("status") == "overdue":
+            invoice_overdue += total
+        else:
+            invoice_outstanding += total
     return {
         "total_leads": total_leads,
         "new_leads": new_leads,
@@ -298,6 +607,13 @@ async def stats():
         "content_count": content_count,
         "pipeline_value_total": total_value,
         "pipeline_value_by_stage": by_stage,
+        "project_count": project_count,
+        "task_count": task_count,
+        "note_count": note_count,
+        "invoice_total": invoice_total,
+        "invoice_paid": invoice_paid,
+        "invoice_outstanding": invoice_outstanding,
+        "invoice_overdue": invoice_overdue,
     }
 
 
@@ -318,3 +634,4 @@ logger = logging.getLogger(__name__)
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+

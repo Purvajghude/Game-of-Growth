@@ -31,7 +31,7 @@ export default function Nav() {
           }`}
           style={{ transitionTimingFunction: "cubic-bezier(0.16,1,0.3,1)" }}
         >
-          <Link to="/" data-testid={LANDING.navLogo} className="flex items-center gap-2.5" data-cursor="hover">
+          <Link to="/" data-testid={LANDING.navLogo} className="cursor-target flex items-center gap-2.5" data-cursor="hover">
             <div className="w-6 h-6 rounded-full bg-[var(--ink)] flex items-center justify-center">
               <span className="font-display italic text-[var(--paper)] text-[12px] leading-none mt-[1px]">g</span>
             </div>
@@ -40,18 +40,18 @@ export default function Nav() {
           </Link>
 
           <div className="hidden md:flex items-center gap-8 text-[13px] font-sans text-[var(--ink-2)]">
-            <a href="#work" className="hover:text-[var(--ink)] transition">Work</a>
-            <a href="#services" className="hover:text-[var(--ink)] transition">Services</a>
-            <a href="#process" className="hover:text-[var(--ink)] transition">Process</a>
-            <a href="#store" className="hover:text-[var(--ink)] transition">Store</a>
-            <a href="#contact" className="hover:text-[var(--ink)] transition">Contact</a>
+            <a href="#work" className="cursor-target hover:text-[var(--ink)] transition">Work</a>
+            <a href="#services" className="cursor-target hover:text-[var(--ink)] transition">Services</a>
+            <a href="#process" className="cursor-target hover:text-[var(--ink)] transition">Process</a>
+            <a href="#store" className="cursor-target hover:text-[var(--ink)] transition">Store</a>
+            <a href="#contact" className="cursor-target hover:text-[var(--ink)] transition">Contact</a>
           </div>
 
           <div className="flex items-center gap-2">
             <Link
               to="/dashboard"
               data-testid={LANDING.navDashboard}
-              className="hidden sm:inline-flex items-center gap-1.5 text-[11.5px] font-mono text-[var(--muted)] hover:text-[var(--ink)] border border-[var(--line-2)] rounded-full px-3 py-1.5 transition"
+              className="cursor-target hidden sm:inline-flex items-center gap-1.5 text-[11.5px] font-mono text-[var(--muted)] hover:text-[var(--ink)] border border-[var(--line-2)] rounded-full px-3 py-1.5 transition"
               data-cursor="hover"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-[var(--ink)]" />
@@ -60,7 +60,7 @@ export default function Nav() {
             <a
               href="#contact"
               data-testid={LANDING.navBookCall}
-              className="inline-flex items-center gap-1.5 bg-[var(--ink)] text-[var(--paper)] rounded-full px-4 py-2 text-[13px] font-medium hover:bg-[var(--ink-2)] transition"
+              className="cursor-target inline-flex items-center gap-1.5 bg-[var(--ink)] text-[var(--paper)] rounded-full px-4 py-2 text-[13px] font-medium hover:bg-[var(--ink-2)] transition"
               data-cursor="hover"
             >
               Book a call <ArrowUpRight className="w-3.5 h-3.5" />

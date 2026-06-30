@@ -21,7 +21,7 @@ export default function Glassmorphism() {
     <section
       data-testid={LANDING.sectionGlass}
       ref={ref}
-      className="relative bg-[var(--paper-2)] py-28 lg:py-40 grain-soft overflow-hidden"
+      className="relative bg-[var(--paper-2)] py-16 lg:py-40 grain-soft overflow-hidden"
     >
       {/* Subtle photographic backdrop */}
       <div className="absolute inset-0 opacity-[0.15] pointer-events-none">

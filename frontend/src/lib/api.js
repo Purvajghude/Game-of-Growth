@@ -21,6 +21,26 @@ export const api = {
   createContent: (data) => http.post("/content", data).then((r) => r.data),
   updateContent: (id, data) => http.patch(`/content/${id}`, data).then((r) => r.data),
   deleteContent: (id) => http.delete(`/content/${id}`).then((r) => r.data),
+  // projects
+  listProjects: () => http.get("/projects").then((r) => r.data),
+  createProject: (data) => http.post("/projects", data).then((r) => r.data),
+  updateProject: (id, data) => http.patch(`/projects/${id}`, data).then((r) => r.data),
+  deleteProject: (id) => http.delete(`/projects/${id}`).then((r) => r.data),
+  // invoices
+  listInvoices: () => http.get("/invoices").then((r) => r.data),
+  createInvoice: (data) => http.post("/invoices", data).then((r) => r.data),
+  updateInvoice: (id, data) => http.patch(`/invoices/${id}`, data).then((r) => r.data),
+  deleteInvoice: (id) => http.delete(`/invoices/${id}`).then((r) => r.data),
+  // tasks
+  listTasks: () => http.get("/tasks").then((r) => r.data),
+  createTask: (data) => http.post("/tasks", data).then((r) => r.data),
+  updateTask: (id, data) => http.patch(`/tasks/${id}`, data).then((r) => r.data),
+  deleteTask: (id) => http.delete(`/tasks/${id}`).then((r) => r.data),
+  // notes
+  listNotes: () => http.get("/notes").then((r) => r.data),
+  createNote: (data) => http.post("/notes", data).then((r) => r.data),
+  updateNote: (id, data) => http.patch(`/notes/${id}`, data).then((r) => r.data),
+  deleteNote: (id) => http.delete(`/notes/${id}`).then((r) => r.data),
   // contact
   createContact: (data) => http.post("/contact", data).then((r) => r.data),
   // stats
