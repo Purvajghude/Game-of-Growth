@@ -36,8 +36,8 @@ export default function Testimonials() {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-12 gap-10 lg:gap-16 items-center">
-          <div className="lg:col-span-5">
+        <div className="grid md:grid-cols-12 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+          <div className="md:col-span-5 lg:col-span-5">
             <AnimatePresence mode="wait">
               <motion.div
                 key={active.name}
@@ -56,7 +56,7 @@ export default function Testimonials() {
               </motion.div>
             </AnimatePresence>
           </div>
-          <div className="lg:col-span-7">
+          <div className="md:col-span-7 lg:col-span-7">
             <span className="font-display text-[120px] leading-none text-[var(--ink)]/15 select-none" style={{ fontVariationSettings: "'opsz' 144, 'SOFT' 80, 'WONK' 1" }}>“</span>
             <AnimatePresence mode="wait">
               <motion.blockquote

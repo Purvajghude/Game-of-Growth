@@ -56,7 +56,7 @@ export default function FinalCta() {
           </a>
         </div>
 
-        <div id="contact-form" className="mt-24 grid lg:grid-cols-2 gap-16 items-start">
+        <div id="contact-form" className="mt-24 grid md:grid-cols-2 lg:grid-cols-2 gap-16 items-start">
           <div>
             <p className="eyebrow">Let's talk</p>
             <h3 className="headline mt-3" style={{ fontSize: "clamp(40px, 5vw, 80px)" }}>Tell us about your <em>ambition.</em></h3>

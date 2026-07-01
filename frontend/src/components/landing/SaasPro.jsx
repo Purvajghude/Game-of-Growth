@@ -23,7 +23,7 @@ export default function SaasPro() {
           </p>
         </div>
 
-        <div className="mt-16 grid lg:grid-cols-3 gap-px bg-[var(--line)] rounded-[18px] overflow-hidden">
+        <div className="mt-16 grid md:grid-cols-3 lg:grid-cols-3 gap-px bg-[var(--line)] rounded-[18px] overflow-hidden">
           {[
             { icon: Bot,       t: "AI Content Engine",       d: "Brand-trained writers that ship 30+ pieces a week, on-voice and on-time." },
             { icon: Workflow,  t: "Lead-to-Cash Workflow",   d: "Capture, qualify, schedule, propose, close — automated end-to-end." },
@@ -53,7 +53,7 @@ export default function SaasPro() {
         </div>
 
         {/* dashboard mock preview — light Notion-like */}
-        <div className="mt-20 rounded-[18px] overflow-hidden border border-[var(--line-2)] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_30px_80px_-30px_rgba(0,0,0,0.12)]">
+        <div className="mt-20 rounded-[18px] overflow-hidden border border-[var(--line-2)] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_30px_80px_-30px_rgba(0,0,0,0.12)] text-[var(--ink)]">
           <div className="flex items-center justify-between px-4 py-2.5 border-b border-[var(--line)] bg-[var(--paper-2)]">
             <div className="flex gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-[var(--line-2)]" />
@@ -64,21 +64,21 @@ export default function SaasPro() {
             <span className="font-mono text-[11px] text-[var(--muted)]">v 1.4.2</span>
           </div>
           <div className="grid grid-cols-12 gap-3 p-4">
-            <div className="col-span-3 border border-[var(--line)] rounded-xl p-4">
+            <div className="col-span-12 md:col-span-3 border border-[var(--line)] rounded-xl p-4">
               <p className="font-mono text-[10px] text-[var(--muted)] tracking-widest">PIPELINE</p>
-              <p className="font-display text-3xl mt-2" style={{ fontVariationSettings: "'opsz' 144, 'SOFT' 30" }}>$284k</p>
+              <p className="font-display text-3xl mt-2" style={{ color: "var(--ink)", fontVariationSettings: "'opsz' 144, 'SOFT' 30" }}>$284k</p>
               <p className="text-[var(--muted)] text-xs mt-1">+18% MoM</p>
             </div>
-            <div className="col-span-3 border border-[var(--line)] rounded-xl p-4">
+            <div className="col-span-12 md:col-span-3 border border-[var(--line)] rounded-xl p-4">
               <p className="font-mono text-[10px] text-[var(--muted)] tracking-widest">LEADS</p>
-              <p className="font-display text-3xl mt-2" style={{ fontVariationSettings: "'opsz' 144, 'SOFT' 30" }}>142</p>
+              <p className="font-display text-3xl mt-2" style={{ color: "var(--ink)", fontVariationSettings: "'opsz' 144, 'SOFT' 30" }}>142</p>
               <p className="text-[var(--muted)] text-xs mt-1">+9 this week</p>
             </div>
-            <div className="col-span-6 border border-[var(--line)] rounded-xl p-4">
+            <div className="col-span-12 md:col-span-6 border border-[var(--line)] rounded-xl p-4">
               <p className="font-mono text-[10px] text-[var(--muted)] tracking-widest mb-3">ACTIVE AUTOMATIONS</p>
               <div className="space-y-2">
                 {["Lead capture → Notion → Slack","Proposal generator (AI)","Newsletter pipeline"].map((x) => (
-                  <div key={x} className="flex items-center justify-between text-sm text-[var(--ink-2)]">
+                  <div key={x} className="flex items-center justify-between text-sm" style={{ color: "var(--ink-2)" }}>
                     <span className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[var(--ink)]" />{x}</span>
                     <span className="font-mono text-[10px] text-[var(--muted)]">running</span>
                   </div>

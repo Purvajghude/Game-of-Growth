@@ -20,9 +20,9 @@ function Item({ p, i }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-120px" }}
       transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1] }}
-      className={`grid lg:grid-cols-2 gap-14 items-center ${i % 2 === 1 ? "lg:[&>*:first-child]:order-2" : ""}`}
+      className={`grid md:grid-cols-2 lg:grid-cols-2 gap-14 items-center ${i % 2 === 1 ? "md:[&>*:first-child]:order-2 lg:[&>*:first-child]:order-2" : ""}`}
     >
-      <motion.div style={{ y: yImg }} className="relative aspect-[4/5] overflow-hidden rounded-[28px] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_30px_60px_-30px_rgba(0,0,0,0.18)] border border-[var(--line)]">
+      <motion.div style={{ y: yImg }} className="relative aspect-[4/5] max-w-[460px] mx-auto w-full overflow-hidden rounded-[28px] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_30px_60px_-30px_rgba(0,0,0,0.18)] border border-[var(--line)]">
         <img src={p.img} alt={p.name} className="w-full h-full object-cover" />
       </motion.div>
       <div>

@@ -30,17 +30,17 @@ export default function Glassmorphism() {
       <div className="absolute inset-0 bg-grid-fine pointer-events-none" />
 
       <div className="relative mx-auto max-w-[1380px] px-6 lg:px-10">
-        <div className="grid lg:grid-cols-12 gap-10 mb-16 items-end">
-          <div className="lg:col-span-8">
+        <div className="grid md:grid-cols-12 lg:grid-cols-12 gap-10 mb-16 items-end">
+          <div className="md:col-span-8 lg:col-span-8">
             <p className="eyebrow">02 — Editorial web</p>
             <h2 className="headline mt-4" style={{ fontSize: "clamp(56px, 8vw, 140px)" }}>
               Sites that feel like <em>publications.</em>
             </h2>
           </div>
-          <p className="lede lg:col-span-4 max-w-md">Marketing sites, SaaS landings and product surfaces — engineered for performance, designed to be remembered.</p>
+          <p className="lede md:col-span-4 lg:col-span-4 max-w-md">Marketing sites, SaaS landings and product surfaces — engineered for performance, designed to be remembered.</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-end">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6 items-end">
           {SITES.map((s, i) => {
             const y = i === 0 ? yA : i === 1 ? yB : yC;
             return (

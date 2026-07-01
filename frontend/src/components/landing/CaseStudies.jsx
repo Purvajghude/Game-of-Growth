@@ -36,9 +36,9 @@ function Case({ c }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-100px" }}
       transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1] }}
-      className="grid lg:grid-cols-12 gap-10 lg:gap-14"
+      className="grid md:grid-cols-12 lg:grid-cols-12 gap-10 lg:gap-14"
     >
-      <div className="lg:col-span-5">
+      <div className="md:col-span-5 lg:col-span-5">
         <div className="sticky top-32">
           <p className="font-mono text-[10.5px] tracking-widest uppercase text-[var(--muted)]">{c.industry}</p>
           <h3 className="headline mt-3" style={{ fontSize: "clamp(44px, 5vw, 84px)" }}>{c.client}</h3>
@@ -57,12 +57,12 @@ function Case({ c }) {
           <a href="#" className="mt-8 inline-flex items-center gap-2 text-[var(--ink)] border-b border-[var(--line-2)] hover:border-[var(--ink)] pb-1 font-sans transition" data-cursor="hover">Read the full story <ArrowUpRight className="w-4 h-4" /></a>
         </div>
       </div>
-      <motion.div style={{ y }} className="lg:col-span-7 grid grid-rows-2 gap-4">
-        <div className="relative overflow-hidden rounded-[18px] border border-[var(--line-2)]">
+      <motion.div style={{ y }} className="md:col-span-7 lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="relative overflow-hidden rounded-[18px] border border-[var(--line-2)] aspect-[4/3] md:aspect-[4/5]">
           <img src={c.before} alt="before" className="w-full h-full object-cover grayscale" />
           <span className="absolute top-4 left-4 font-mono text-[10px] tracking-widest uppercase bg-[var(--paper)] text-[var(--ink)] px-2 py-1 rounded border border-[var(--line)]">Before</span>
         </div>
-        <div className="relative overflow-hidden rounded-[18px] border border-[var(--line-2)] group">
+        <div className="relative overflow-hidden rounded-[18px] border border-[var(--line-2)] group aspect-[4/3] md:aspect-[4/5]">
           <img src={c.after} alt="after" className="w-full h-full object-cover transition-transform duration-[1600ms] group-hover:scale-[1.04]" style={{ transitionTimingFunction: "cubic-bezier(0.16,1,0.3,1)" }} />
           <span className="absolute top-4 left-4 font-mono text-[10px] tracking-widest uppercase bg-[var(--ink)] text-[var(--paper)] px-2 py-1 rounded">After</span>
         </div>

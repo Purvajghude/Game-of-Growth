@@ -25,21 +25,21 @@ export default function Brutalism() {
     >
       <div className="absolute inset-0 bg-grid pointer-events-none" />
       <div className="relative mx-auto max-w-[1380px] px-6 lg:px-10">
-        <div className="grid lg:grid-cols-12 gap-10 items-end mb-16">
-          <div className="lg:col-span-8">
+        <div className="grid md:grid-cols-12 lg:grid-cols-12 gap-10 items-end mb-16">
+          <div className="md:col-span-8 lg:col-span-8">
             <p className="eyebrow">01 — Brand identity</p>
             <h2 className="headline mt-4" style={{ fontSize: "clamp(56px, 8vw, 140px)" }}>
               Marks with <em>conviction.</em>
             </h2>
           </div>
-          <div className="lg:col-span-4">
+          <div className="md:col-span-4 lg:col-span-4">
             <p className="lede max-w-md">
               Logos, type systems, voice, motion. Built to be defended in a board room and recognised in a feed.
             </p>
           </div>
         </div>
 
-        <motion.div style={{ y }} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <motion.div style={{ y }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
           {PROJECTS.map((p, i) => (
             <motion.a
               key={p.name}

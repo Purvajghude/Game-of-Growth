@@ -83,7 +83,7 @@ export default function Hero() {
     <section
       ref={wrapRef}
       data-testid={LANDING.hero}
-      className="relative min-h-[100dvh] md:min-h-[100vh] w-full overflow-hidden bg-[var(--paper)] grain"
+      className="relative w-full overflow-hidden bg-[var(--paper)] grain"
     >
       <WebGLBackground />
       {/* Grid background */}
@@ -91,7 +91,8 @@ export default function Hero() {
       {/* subtle vignette */}
       <div className="absolute inset-0 pointer-events-none z-[1]" style={{ background: "radial-gradient(120% 80% at 50% 35%, transparent 50%, rgba(20,19,15,0.10) 100%)" }} />
 
-      <div className="hero-content-wrapper relative z-10 pt-24 lg:pt-[140px]">
+      {/* First fold: Viewport-sized content wrapper */}
+      <div className="relative min-h-[100dvh] md:min-h-[100vh] flex flex-col justify-between z-10 pt-20 lg:pt-24 pb-8">
         {/* Top eyebrow row */}
         <motion.div
           initial={{ opacity: 0, y: 14 }}
@@ -108,18 +109,18 @@ export default function Hero() {
         {/* Main grid */}
         <motion.div
           style={{ y: yMain }}
-          className="relative mx-auto max-w-[1380px] px-6 lg:px-10 pt-14 lg:pt-20 pb-24"
+          className="relative mx-auto w-full max-w-[1380px] px-6 lg:px-10 my-auto pt-8 pb-12"
         >
-          <div className="grid lg:grid-cols-12 gap-10 items-end">
+          <div className="grid md:grid-cols-12 lg:grid-cols-12 gap-10 items-end">
             {/* Headline */}
-            <div className="lg:col-span-8">
+            <div className="md:col-span-8 lg:col-span-8">
               <motion.h1
                 ref={titleRef}
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: 0.55 }}
                 className="headline"
-                style={{ fontSize: "clamp(64px, 10.5vw, 196px)", willChange: "transform", transition: "transform 0.45s cubic-bezier(0.16,1,0.3,1)" }}
+                style={{ fontSize: "clamp(44px, 6.5vw, 110px)", willChange: "transform", transition: "transform 0.45s cubic-bezier(0.16,1,0.3,1)" }}
               >
                 The <em>art</em> of
                 <br/>
@@ -135,7 +136,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1], delay: 0.9 }}
-              className="lg:col-span-4 lg:pl-6 lg:pb-6"
+              className="md:col-span-4 lg:col-span-4 md:pl-6 md:pb-6 lg:pl-6 lg:pb-6"
             >
               <p className="lede max-w-sm">
                 We design brands, websites and operating systems for founders who refuse to look like everyone else.
@@ -150,80 +151,82 @@ export default function Hero() {
               </div>
             </motion.div>
           </div>
+        </motion.div>
 
-          {/* Lower row — hero photo + meta */}
-          <div className="mt-8 lg:mt-24 grid lg:grid-cols-12 gap-10 items-end">
-            <motion.div
-              style={{ y: yPhoto }}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: 1.05 }}
-              className="lg:col-span-7"
-            >
-              <div ref={photoWrap} className="perspective-2000 cursor-target">
-                <div
-                  ref={photoRef}
-                  className="relative aspect-[4/3] rounded-[18px] overflow-hidden border border-[var(--line-2)] bg-[var(--paper-2)]"
-                  style={{ transition: "transform 0.45s cubic-bezier(0.16,1,0.3,1)", willChange: "transform" }}
-                >
-                  <img
-                    src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=2000&q=88&auto=format&fit=crop"
-                    alt="Studio interior"
-                    className="w-full h-full object-cover"
-                    loading="eager"
-                  />
-                  <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(180deg, transparent 55%, rgba(20,19,15,0.45) 100%)" }} />
-                  <div className="absolute bottom-5 left-5 right-5 flex items-end justify-between text-[var(--paper)]">
-                    <div>
-                      <p className="font-mono text-[10px] tracking-[0.25em] uppercase opacity-80">Selected work 2025</p>
-                      <p className="font-display text-2xl mt-1" style={{ fontVariationSettings: "'opsz' 144, 'SOFT' 30" }}>Northwind · Brand & Web</p>
-                    </div>
-                    <ArrowUpRight className="w-5 h-5" />
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: 1.2 }}
-              className="lg:col-span-5 space-y-8"
-            >
-              <div>
-                <p className="eyebrow">— What we make</p>
-                <ul className="mt-3 space-y-1.5 font-sans text-[var(--ink)] text-[20px] leading-snug">
-                  <li className="flex items-baseline gap-3 cursor-target w-max"><span className="font-mono text-xs text-[var(--muted)]">01</span> Brand identity systems</li>
-                  <li className="flex items-baseline gap-3 cursor-target w-max"><span className="font-mono text-xs text-[var(--muted)]">02</span> Editorial websites</li>
-                  <li className="flex items-baseline gap-3 cursor-target w-max"><span className="font-mono text-xs text-[var(--muted)]">03</span> Mobile & product design</li>
-                  <li className="flex items-baseline gap-3 cursor-target w-max"><span className="font-mono text-xs text-[var(--muted)]">04</span> Motion & content</li>
-                  <li className="flex items-baseline gap-3 cursor-target w-max"><span className="font-mono text-xs text-[var(--muted)]">05</span> Internal operating systems</li>
-                </ul>
-              </div>
-              <div className="flex items-center justify-between border-t border-[var(--line)] pt-5">
-                <div>
-                  <p className="eyebrow">Selected clients</p>
-                  <p className="font-display text-xl mt-1" style={{ fontVariationSettings: "'opsz' 144, 'SOFT' 30" }}>Northwind · Atlas · Halcyon · Maven</p>
-                </div>
-                <p className="font-mono text-[10px] text-[var(--muted)] tracking-widest">+42 more</p>
-              </div>
-            </motion.div>
-          </div>
+        {/* Scroll indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.8, duration: 1 }}
+          className="flex flex-col items-center gap-2 cursor-target mt-auto"
+        >
+          <span className="font-mono text-[10px] tracking-[0.3em] text-[var(--muted)]">SCROLL</span>
+          <motion.div animate={{ y: [0, 6, 0] }} transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}>
+            <ArrowDown className="w-3.5 h-3.5 text-[var(--muted)]" />
+          </motion.div>
         </motion.div>
       </div>
 
-      {/* Scroll indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.8, duration: 1 }}
-        className="absolute bottom-7 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 cursor-target"
-      >
-        <span className="font-mono text-[10px] tracking-[0.3em] text-[var(--muted)]">SCROLL</span>
-        <motion.div animate={{ y: [0, 6, 0] }} transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}>
-          <ArrowDown className="w-3.5 h-3.5 text-[var(--muted)]" />
-        </motion.div>
-      </motion.div>
+      {/* Second fold: photo + meta */}
+      <div className="relative z-10 mx-auto max-w-[1380px] px-6 lg:px-10 pb-24 lg:pb-32 mt-12 md:mt-20">
+        <div className="grid md:grid-cols-12 lg:grid-cols-12 gap-10 items-end">
+          <motion.div
+            style={{ y: yPhoto }}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: 1.05 }}
+            className="md:col-span-7 lg:col-span-7"
+          >
+            <div ref={photoWrap} className="perspective-2000 cursor-target">
+              <div
+                 ref={photoRef}
+                className="relative aspect-[4/3] rounded-[18px] overflow-hidden border border-[var(--line-2)] bg-[var(--paper-2)]"
+                style={{ transition: "transform 0.45s cubic-bezier(0.16,1,0.3,1)", willChange: "transform" }}
+              >
+                <img
+                  src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=2000&q=88&auto=format&fit=crop"
+                  alt="Studio interior"
+                  className="w-full h-full object-cover"
+                  loading="eager"
+                />
+                <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(180deg, transparent 55%, rgba(20,19,15,0.45) 100%)" }} />
+                <div className="absolute bottom-5 left-5 right-5 flex items-end justify-between text-[var(--paper)]">
+                  <div>
+                    <p className="font-mono text-[10px] tracking-[0.25em] uppercase opacity-80">Selected work 2025</p>
+                    <p className="font-display text-2xl mt-1" style={{ fontVariationSettings: "'opsz' 144, 'SOFT' 30" }}>Northwind · Brand & Web</p>
+                  </div>
+                  <ArrowUpRight className="w-5 h-5" />
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: 1.2 }}
+            className="md:col-span-5 lg:col-span-5 space-y-8"
+          >
+            <div>
+              <p className="eyebrow">— What we make</p>
+              <ul className="mt-3 space-y-1.5 font-sans text-[var(--ink)] text-[20px] leading-snug">
+                <li className="flex items-baseline gap-3 cursor-target w-max"><span className="font-mono text-xs text-[var(--muted)]">01</span> Brand identity systems</li>
+                <li className="flex items-baseline gap-3 cursor-target w-max"><span className="font-mono text-xs text-[var(--muted)]">02</span> Editorial websites</li>
+                <li className="flex items-baseline gap-3 cursor-target w-max"><span className="font-mono text-xs text-[var(--muted)]">03</span> Mobile & product design</li>
+                <li className="flex items-baseline gap-3 cursor-target w-max"><span className="font-mono text-xs text-[var(--muted)]">04</span> Motion & content</li>
+                <li className="flex items-baseline gap-3 cursor-target w-max"><span className="font-mono text-xs text-[var(--muted)]">05</span> Internal operating systems</li>
+              </ul>
+            </div>
+            <div className="flex items-center justify-between border-t border-[var(--line)] pt-5">
+              <div>
+                <p className="eyebrow">Selected clients</p>
+                <p className="font-display text-xl mt-1" style={{ fontVariationSettings: "'opsz' 144, 'SOFT' 30" }}>Northwind · Atlas · Halcyon · Maven</p>
+              </div>
+              <p className="font-mono text-[10px] text-[var(--muted)] tracking-widest">+42 more</p>
+            </div>
+          </motion.div>
+        </div>
+      </div>
     </section>
   );
 }

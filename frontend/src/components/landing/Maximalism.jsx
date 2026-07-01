@@ -26,14 +26,14 @@ export default function Maximalism() {
     >
       <div className="absolute inset-0 bg-grid-dark pointer-events-none" />
       <div className="relative mx-auto max-w-[1380px] px-6 lg:px-10">
-        <div className="grid lg:grid-cols-12 gap-10 mb-20 items-end">
-          <div className="lg:col-span-8">
+        <div className="grid md:grid-cols-12 lg:grid-cols-12 gap-10 mb-20 items-end">
+          <div className="md:col-span-8 lg:col-span-8">
             <p className="eyebrow" style={{ color: "#a8a298" }}>04 — Social, content, film</p>
             <h2 className="headline mt-4" style={{ fontSize: "clamp(56px, 8.5vw, 150px)", color: "var(--night-ink)" }}>
               The work that gets <em>screenshot.</em>
             </h2>
           </div>
-          <p className="lede lg:col-span-4 max-w-md" style={{ color: "#bcb6aa" }}>
+          <p className="lede md:col-span-4 lg:col-span-4 max-w-md" style={{ color: "#bcb6aa" }}>
             Reels, short films, photo direction, editorial moments — the kind of content people send to friends.
           </p>
         </div>

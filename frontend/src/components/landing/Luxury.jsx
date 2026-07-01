@@ -24,7 +24,7 @@ export default function Luxury() {
           <div className="h-px w-24 mx-auto mt-8" style={{ background: "var(--gold)" }} />
         </div>
 
-        <div className="mt-20 grid lg:grid-cols-2 gap-6 lg:gap-10">
+        <div className="mt-20 grid md:grid-cols-2 lg:grid-cols-2 gap-6 lg:gap-10">
           {[
             { name: "Aurum Watches", tag: "Heritage Re-launch", img: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1600&q=92" },
             { name: "Maison Vela",   tag: "Fragrance House",    img: "https://images.unsplash.com/photo-1541643600914-78b084683601?w=1600&q=92" },

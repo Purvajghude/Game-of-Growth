@@ -47,7 +47,7 @@ export default function Process() {
   return (
     <section id="process" data-testid={LANDING.sectionProcess} className="relative bg-[var(--paper)] py-16 lg:py-40 grain-soft">
       <div className="absolute inset-0 bg-grid pointer-events-none" />
-      <div className="relative mx-auto max-w-[1280px] px-6 lg:px-10">
+      <div className="relative mx-auto max-w-[1380px] px-6 lg:px-10">
         <div className="text-center mb-20">
           <p className="eyebrow">07 — The process</p>
           <h2 className="headline mt-4" style={{ fontSize: "clamp(56px, 7.5vw, 130px)" }}>
