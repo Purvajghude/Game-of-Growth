@@ -1,4 +1,8 @@
 // craco.config.js
+const { webcrypto } = require("crypto");
+globalThis.crypto = globalThis.crypto || webcrypto;
+global.crypto = global.crypto || webcrypto;
+
 const path = require("path");
 require("dotenv").config();
 
