@@ -19,6 +19,7 @@ export const LANDING = {
   sectionCase: "landing-section-case",
   sectionTestimonials: "landing-section-testimonials",
   sectionStore: "landing-section-store",
+  sectionTeam: "landing-section-team",
   finalCta: "landing-final-cta",
   finalCtaPrimary: "landing-final-cta-primary",
   finalCtaSecondary: "landing-final-cta-secondary",

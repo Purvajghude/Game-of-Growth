@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowUpRight, ArrowDown } from "lucide-react";
 import { LANDING } from "@/constants/testIds";
@@ -92,7 +93,7 @@ export default function Hero() {
       <div className="absolute inset-0 pointer-events-none z-[1]" style={{ background: "radial-gradient(120% 80% at 50% 35%, transparent 50%, rgba(20,19,15,0.10) 100%)" }} />
 
       {/* First fold: Viewport-sized content wrapper */}
-      <div className="relative min-h-[100dvh] md:min-h-[100vh] flex flex-col justify-between z-10 pt-20 lg:pt-24 pb-8">
+      <div className="hero-content-wrapper relative min-h-[100dvh] md:min-h-[100vh] flex flex-col justify-between z-10 pt-20 lg:pt-24 pb-8">
         {/* Top eyebrow row */}
         <motion.div
           initial={{ opacity: 0, y: 14 }}
@@ -142,12 +143,12 @@ export default function Hero() {
                 We design brands, websites and operating systems for founders who refuse to look like everyone else.
               </p>
               <div className="mt-8 flex items-center gap-3 flex-wrap">
-                <a href="#contact" data-testid={LANDING.heroPrimaryCta} className="cursor-target btn btn-primary" data-cursor="hover">
+                <Link to="/contact" data-testid={LANDING.heroPrimaryCta} className="cursor-target btn btn-primary" data-cursor="hover">
                   Start a project <ArrowUpRight className="w-4 h-4" />
-                </a>
-                <a href="#work" data-testid={LANDING.heroSecondaryCta} className="cursor-target btn btn-ghost" data-cursor="hover">
+                </Link>
+                <Link to="/work" data-testid={LANDING.heroSecondaryCta} className="cursor-target btn btn-ghost" data-cursor="hover">
                   See the work
-                </a>
+                </Link>
               </div>
             </motion.div>
           </div>

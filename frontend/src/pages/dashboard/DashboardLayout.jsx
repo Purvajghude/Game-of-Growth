@@ -1,17 +1,23 @@
-import { NavLink, Outlet, useLocation, Link } from "react-router-dom";
-import { LayoutDashboard, Users, Kanban, CalendarDays, Sparkles, Settings as SettingsIcon, ArrowLeft, Bell, Search, FolderKanban, Receipt, CheckSquare, FileText } from "lucide-react";
+import { NavLink, Outlet, useLocation, Link, useNavigate } from "react-router-dom";
+import { LayoutDashboard, Users, Kanban, CalendarDays, Sparkles, Settings as SettingsIcon, ArrowLeft, Bell, Search, FolderKanban, Receipt, CheckSquare, FileText, FileSignature, CalendarClock, LogOut } from "lucide-react";
 import { DASH } from "@/constants/testIds";
 import { useEffect } from "react";
+import { auth } from "@/lib/auth";
+
+const NAV_SELL = [
+  { to: "/dashboard/crm",       label: "Lead CRM",   icon: Users,         testId: DASH.navCrm },
+  { to: "/dashboard/followups", label: "Follow-ups", icon: CalendarClock, testId: "dash-nav-followups" },
+  { to: "/dashboard/proposals", label: "Proposals",  icon: FileSignature, testId: "dash-nav-proposals" },
+  { to: "/dashboard/pipeline",  label: "Pipeline",   icon: Kanban,        testId: DASH.navPipeline },
+];
 
 const NAV_WORK = [
   { to: "/dashboard",          label: "Overview",      icon: LayoutDashboard, end: true, testId: DASH.navOverview },
   { to: "/dashboard/projects", label: "Projects",      icon: FolderKanban,    testId: DASH.navProjects },
-  { to: "/dashboard/pipeline", label: "Pipeline",      icon: Kanban,          testId: DASH.navPipeline },
+  { to: "/dashboard/tasks",    label: "Team Tasks",    icon: CheckSquare,     testId: DASH.navTasks },
 ];
 
 const NAV_OPS = [
-  { to: "/dashboard/crm",          label: "Lead CRM",      icon: Users,           testId: DASH.navCrm },
-  { to: "/dashboard/tasks",        label: "Team Tasks",    icon: CheckSquare,     testId: DASH.navTasks },
   { to: "/dashboard/calendar",     label: "Content",       icon: CalendarDays,    testId: DASH.navCalendar },
   { to: "/dashboard/notes",        label: "Notes",         icon: FileText,        testId: DASH.navNotes },
   { to: "/dashboard/ai-generator", label: "AI Generator",  icon: Sparkles,        testId: DASH.navAi },
@@ -20,6 +26,12 @@ const NAV_OPS = [
 
 export default function DashboardLayout() {
   const loc = useLocation();
+  const navigate = useNavigate();
+  const user = auth.getUser();
+  const signOut = () => {
+    auth.clear();
+    navigate("/login", { replace: true });
+  };
   useEffect(() => {
     document.body.classList.add('dashboard-root');
     document.documentElement.classList.add('dashboard-root');
@@ -33,6 +45,8 @@ export default function DashboardLayout() {
     "/dashboard": "Overview",
     "/dashboard/projects": "Projects",
     "/dashboard/pipeline": "Pipeline",
+    "/dashboard/followups": "Follow-ups",
+    "/dashboard/proposals": "Proposals",
     "/dashboard/crm": "Lead CRM",
     "/dashboard/tasks": "Team Tasks",
     "/dashboard/calendar": "Content Calendar",
@@ -61,6 +75,29 @@ export default function DashboardLayout() {
             <p className="px-3 mb-2 font-mono text-[10px] tracking-widest uppercase text-[var(--muted)]">Work</p>
             <div className="space-y-0.5">
               {NAV_WORK.map((n) => (
+                <NavLink
+                  key={n.to}
+                  to={n.to}
+                  end={n.end}
+                  data-testid={n.testId}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] transition-all ${
+                      isActive ? "bg-white text-[var(--ink)] border border-[var(--line)] shadow-[0_1px_2px_rgba(0,0,0,0.03)]" : "text-[var(--ink-2)] hover:bg-white/60"
+                    }`
+                  }
+                >
+                  <n.icon className="w-4 h-4" strokeWidth={1.5} />
+                  {n.label}
+                </NavLink>
+              ))}
+            </div>
+          </div>
+
+          {/* Sell Section */}
+          <div>
+            <p className="px-3 mb-2 font-mono text-[10px] tracking-widest uppercase text-[var(--muted)]">Sell</p>
+            <div className="space-y-0.5">
+              {NAV_SELL.map((n) => (
                 <NavLink
                   key={n.to}
                   to={n.to}
@@ -119,6 +156,13 @@ export default function DashboardLayout() {
           <Link to="/" className="flex items-center gap-3 text-[var(--muted)] hover:text-[var(--ink)] text-[13px] px-3 py-2 transition">
             <ArrowLeft className="w-4 h-4" /> Back to site
           </Link>
+          <button
+            onClick={signOut}
+            data-testid="dash-sign-out"
+            className="w-full flex items-center gap-3 text-[var(--muted)] hover:text-[var(--ink)] text-[13px] px-3 py-2 transition"
+          >
+            <LogOut className="w-4 h-4" /> Sign out
+          </button>
         </div>
       </aside>
 
@@ -138,7 +182,12 @@ export default function DashboardLayout() {
               <button className="w-9 h-9 rounded-lg border border-[var(--line)] bg-white flex items-center justify-center hover:bg-[var(--paper-2)] transition">
                 <Bell className="w-4 h-4 text-[var(--ink-2)]" strokeWidth={1.5} />
               </button>
-              <div className="w-9 h-9 rounded-full bg-[var(--ink)] flex items-center justify-center text-[var(--paper)] font-medium text-sm">F</div>
+              <div
+                className="w-9 h-9 rounded-full bg-[var(--ink)] flex items-center justify-center text-[var(--paper)] font-medium text-sm uppercase"
+                title={user?.username || "Team"}
+              >
+                {(user?.username || "G").slice(0, 1)}
+              </div>
             </div>
           </div>
         </header>

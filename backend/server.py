@@ -1,9 +1,13 @@
-from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi import FastAPI, APIRouter, HTTPException, Header
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
+import base64
+import hashlib
+import hmac
 import logging
+import time
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
@@ -128,6 +132,76 @@ class ContactCreate(BaseModel):
     email: str
     company: Optional[str] = ""
     message: str
+
+
+# ============ Team auth (HMAC-signed tokens, stdlib only) ============
+# Credentials come from backend/.env:
+#   AUTH_SECRET=<long random string>
+#   TEAM_USERS=purvaj:changeme1,member2:changeme2,member3:changeme3,member4:changeme4
+AUTH_SECRET = os.environ.get("AUTH_SECRET", "gog-dev-secret-change-me")
+TOKEN_TTL_SECONDS = 60 * 60 * 24 * 14  # 14 days
+
+
+def _team_users() -> dict:
+    raw = os.environ.get(
+        "TEAM_USERS",
+        "purvaj:gogrow2026,member2:gogrow2026,member3:gogrow2026,member4:gogrow2026",
+    )
+    users = {}
+    for pair in raw.split(","):
+        if ":" in pair:
+            u, p = pair.split(":", 1)
+            users[u.strip().lower()] = p.strip()
+    return users
+
+
+def _sign(payload: str) -> str:
+    return hmac.new(AUTH_SECRET.encode(), payload.encode(), hashlib.sha256).hexdigest()
+
+
+def _make_token(username: str) -> str:
+    payload = f"{username}|{int(time.time()) + TOKEN_TTL_SECONDS}"
+    encoded = base64.urlsafe_b64encode(payload.encode()).decode()
+    return f"{encoded}.{_sign(payload)}"
+
+
+def _verify_token(token: str) -> Optional[str]:
+    try:
+        encoded, sig = token.rsplit(".", 1)
+        payload = base64.urlsafe_b64decode(encoded.encode()).decode()
+        if not hmac.compare_digest(_sign(payload), sig):
+            return None
+        username, expiry = payload.rsplit("|", 1)
+        if int(expiry) < time.time():
+            return None
+        return username
+    except Exception:
+        return None
+
+
+class LoginPayload(BaseModel):
+    username: str
+    password: str
+
+
+@api_router.post("/auth/login")
+async def auth_login(payload: LoginPayload):
+    users = _team_users()
+    username = payload.username.strip().lower()
+    expected = users.get(username)
+    if expected is None or not hmac.compare_digest(expected, payload.password):
+        raise HTTPException(401, "Wrong username or password")
+    return {"token": _make_token(username), "user": {"username": username}}
+
+
+@api_router.get("/auth/me")
+async def auth_me(authorization: Optional[str] = Header(None)):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(401, "Not signed in")
+    username = _verify_token(authorization.removeprefix("Bearer "))
+    if not username:
+        raise HTTPException(401, "Session expired")
+    return {"user": {"username": username}}
 
 
 # ============ Helpers ============
@@ -561,6 +635,141 @@ async def delete_note(item_id: str):
     return {"deleted": True, "id": item_id}
 
 
+# ============ Proposals ============
+class Proposal(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
+    client: Optional[str] = ""
+    contact: Optional[str] = ""  # email or phone
+    services: Optional[List[str]] = []
+    amount: Optional[float] = 0
+    status: str = "draft"  # draft | sent | accepted | declined
+    valid_until: Optional[str] = None  # YYYY-MM-DD
+    scope: Optional[str] = ""
+    notes: Optional[str] = ""
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ProposalCreate(BaseModel):
+    title: str
+    client: Optional[str] = ""
+    contact: Optional[str] = ""
+    services: Optional[List[str]] = []
+    amount: Optional[float] = 0
+    status: Optional[str] = "draft"
+    valid_until: Optional[str] = None
+    scope: Optional[str] = ""
+    notes: Optional[str] = ""
+
+class ProposalUpdate(BaseModel):
+    title: Optional[str] = None
+    client: Optional[str] = None
+    contact: Optional[str] = None
+    services: Optional[List[str]] = None
+    amount: Optional[float] = None
+    status: Optional[str] = None
+    valid_until: Optional[str] = None
+    scope: Optional[str] = None
+    notes: Optional[str] = None
+
+
+@api_router.get("/proposals", response_model=List[Proposal])
+async def list_proposals():
+    docs = await db.proposals.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return [_hydrate(d) for d in docs]
+
+@api_router.post("/proposals", response_model=Proposal)
+async def create_proposal(payload: ProposalCreate):
+    item = Proposal(**payload.model_dump())
+    doc = item.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.proposals.insert_one(doc)
+    return item
+
+@api_router.patch("/proposals/{item_id}", response_model=Proposal)
+async def update_proposal(item_id: str, payload: ProposalUpdate):
+    update = {k: v for k, v in payload.model_dump().items() if v is not None}
+    if not update:
+        raise HTTPException(400, "No fields to update")
+    res = await db.proposals.find_one_and_update(
+        {"id": item_id}, {"$set": update},
+        return_document=True, projection={"_id": 0}
+    )
+    if not res:
+        raise HTTPException(404, "Proposal not found")
+    return _hydrate(res)
+
+@api_router.delete("/proposals/{item_id}")
+async def delete_proposal(item_id: str):
+    res = await db.proposals.delete_one({"id": item_id})
+    if res.deleted_count == 0:
+        raise HTTPException(404, "Proposal not found")
+    return {"deleted": True, "id": item_id}
+
+
+# ============ Follow-ups ============
+class FollowUp(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    lead_name: str
+    contact: Optional[str] = ""  # phone / email / handle
+    channel: str = "call"  # call | whatsapp | email | meeting
+    due_date: str  # YYYY-MM-DD
+    note: Optional[str] = ""
+    done: bool = False
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class FollowUpCreate(BaseModel):
+    lead_name: str
+    contact: Optional[str] = ""
+    channel: Optional[str] = "call"
+    due_date: str
+    note: Optional[str] = ""
+    done: Optional[bool] = False
+
+class FollowUpUpdate(BaseModel):
+    lead_name: Optional[str] = None
+    contact: Optional[str] = None
+    channel: Optional[str] = None
+    due_date: Optional[str] = None
+    note: Optional[str] = None
+    done: Optional[bool] = None
+
+
+@api_router.get("/followups", response_model=List[FollowUp])
+async def list_followups():
+    docs = await db.followups.find({}, {"_id": 0}).sort("due_date", 1).to_list(1000)
+    return [_hydrate(d) for d in docs]
+
+@api_router.post("/followups", response_model=FollowUp)
+async def create_followup(payload: FollowUpCreate):
+    item = FollowUp(**payload.model_dump())
+    doc = item.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.followups.insert_one(doc)
+    return item
+
+@api_router.patch("/followups/{item_id}", response_model=FollowUp)
+async def update_followup(item_id: str, payload: FollowUpUpdate):
+    update = {k: v for k, v in payload.model_dump().items() if v is not None}
+    if not update:
+        raise HTTPException(400, "No fields to update")
+    res = await db.followups.find_one_and_update(
+        {"id": item_id}, {"$set": update},
+        return_document=True, projection={"_id": 0}
+    )
+    if not res:
+        raise HTTPException(404, "Follow-up not found")
+    return _hydrate(res)
+
+@api_router.delete("/followups/{item_id}")
+async def delete_followup(item_id: str):
+    res = await db.followups.delete_one({"id": item_id})
+    if res.deleted_count == 0:
+        raise HTTPException(404, "Follow-up not found")
+    return {"deleted": True, "id": item_id}
+
+
 # ============ Stats ============
 @api_router.get("/stats")
 async def stats():
@@ -599,7 +808,19 @@ async def stats():
             invoice_overdue += total
         else:
             invoice_outstanding += total
+    # proposals + follow-ups
+    proposal_count = await db.proposals.count_documents({})
+    proposals_sent = await db.proposals.count_documents({"status": "sent"})
+    proposals_accepted = await db.proposals.count_documents({"status": "accepted"})
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    followups_due = await db.followups.count_documents({"done": False, "due_date": {"$lte": today}})
+    followups_open = await db.followups.count_documents({"done": False})
     return {
+        "proposal_count": proposal_count,
+        "proposals_sent": proposals_sent,
+        "proposals_accepted": proposals_accepted,
+        "followups_due_today": followups_due,
+        "followups_open": followups_open,
         "total_leads": total_leads,
         "new_leads": new_leads,
         "won_leads": won,

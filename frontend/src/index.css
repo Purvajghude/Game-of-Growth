@@ -51,6 +51,9 @@ body { margin: 0; overflow-x: hidden; cursor: none; }
 
 ::selection { background: var(--ink); color: var(--paper); }
 html { scroll-behavior: smooth; }
+/* Lenis drives scrolling on the landing page; native smooth would fight it */
+html.lenis, html.lenis body { scroll-behavior: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto; }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 10px; height: 10px; }

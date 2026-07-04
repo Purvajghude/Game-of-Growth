@@ -5,7 +5,27 @@ export const API = `${BACKEND_URL}/api`;
 
 export const http = axios.create({ baseURL: API, headers: { "Content-Type": "application/json" } });
 
+// attach team token when present
+http.interceptors.request.use((config) => {
+  const token = localStorage.getItem("gog_token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
 export const api = {
+  // auth
+  login: (username, password) => http.post("/auth/login", { username, password }).then((r) => r.data),
+  me: () => http.get("/auth/me").then((r) => r.data),
+  // proposals
+  listProposals: () => http.get("/proposals").then((r) => r.data),
+  createProposal: (data) => http.post("/proposals", data).then((r) => r.data),
+  updateProposal: (id, data) => http.patch(`/proposals/${id}`, data).then((r) => r.data),
+  deleteProposal: (id) => http.delete(`/proposals/${id}`).then((r) => r.data),
+  // follow-ups
+  listFollowups: () => http.get("/followups").then((r) => r.data),
+  createFollowup: (data) => http.post("/followups", data).then((r) => r.data),
+  updateFollowup: (id, data) => http.patch(`/followups/${id}`, data).then((r) => r.data),
+  deleteFollowup: (id) => http.delete(`/followups/${id}`).then((r) => r.data),
   // leads
   listLeads: () => http.get("/leads").then((r) => r.data),
   createLead: (data) => http.post("/leads", data).then((r) => r.data),

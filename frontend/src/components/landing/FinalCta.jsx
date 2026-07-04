@@ -1,5 +1,6 @@
 // Final CTA + contact form — light editorial, single quiet motion layer
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { LANDING } from "@/constants/testIds";
 import { ArrowUpRight, Loader2, Check } from "lucide-react";
@@ -51,9 +52,9 @@ export default function FinalCta() {
           <a href="#contact-form" data-testid={LANDING.finalCtaPrimary} className="btn btn-primary" data-cursor="hover">
             Book a strategy call <ArrowUpRight className="w-4 h-4" />
           </a>
-          <a href="#work" data-testid={LANDING.finalCtaSecondary} className="btn btn-ghost" data-cursor="hover">
+          <Link to="/work" data-testid={LANDING.finalCtaSecondary} className="cursor-target btn btn-ghost" data-cursor="hover">
             Explore our work
-          </a>
+          </Link>
         </div>
 
         <div id="contact-form" className="mt-24 grid md:grid-cols-2 lg:grid-cols-2 gap-16 items-start">

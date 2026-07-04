@@ -1,4 +1,5 @@
 // Apple-minimal product showcase — white, generous, type as hero, slow reveals
+import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { LANDING } from "@/constants/testIds";
@@ -37,7 +38,7 @@ function Item({ p, i }) {
             </div>
           ))}
         </div>
-        <a href="#contact" className="mt-8 inline-flex items-center gap-2 text-[var(--ink)] border-b border-[var(--line-2)] pb-1 font-sans hover:border-[var(--ink)] transition">Read the case study →</a>
+        <Link to="/contact" className="cursor-target mt-8 inline-flex items-center gap-2 text-[var(--ink)] border-b border-[var(--line-2)] pb-1 font-sans hover:border-[var(--ink)] transition" data-cursor="hover">Read the case study →</Link>
       </div>
     </motion.div>
   );

@@ -19,7 +19,7 @@ export default function Storefront() {
       <div className="relative mx-auto max-w-[1380px] px-6 lg:px-10">
         <div className="flex items-end justify-between flex-wrap gap-6 mb-16">
           <div>
-            <p className="eyebrow">10 — Digital products</p>
+            <p className="eyebrow">11 — Digital products</p>
             <h2 className="headline mt-4" style={{ fontSize: "clamp(56px, 7.5vw, 130px)" }}>The <em>Store.</em></h2>
           </div>
           <p className="lede max-w-md">Tools we use ourselves. Crafted, polished, and shipped. Storefront launching Q2 2025.</p>

@@ -1,6 +1,13 @@
 import "@/App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Landing from "@/pages/Landing";
+import SiteLayout from "@/components/site/SiteLayout";
+import Home from "@/pages/Home";
+import Work from "@/pages/Work";
+import Studio from "@/pages/Studio";
+import Store from "@/pages/Store";
+import Contact from "@/pages/Contact";
+import Login from "@/pages/Login";
+import RequireAuth from "@/components/RequireAuth";
 import DashboardLayout from "@/pages/dashboard/DashboardLayout";
 import Overview from "@/pages/dashboard/Overview";
 import CRM from "@/pages/dashboard/CRM";
@@ -12,6 +19,8 @@ import Projects from "@/pages/dashboard/Projects";
 import Invoices from "@/pages/dashboard/Invoices";
 import TeamTasks from "@/pages/dashboard/TeamTasks";
 import Notes from "@/pages/dashboard/Notes";
+import Proposals from "@/pages/dashboard/Proposals";
+import FollowUps from "@/pages/dashboard/FollowUps";
 import { Toaster } from "@/components/ui/sonner";
 
 function App() {
@@ -19,10 +28,26 @@ function App() {
     <div className="App">
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/dashboard" element={<DashboardLayout />}>
+          <Route element={<SiteLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/work" element={<Work />} />
+            <Route path="/studio" element={<Studio />} />
+            <Route path="/store" element={<Store />} />
+            <Route path="/contact" element={<Contact />} />
+          </Route>
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/dashboard"
+            element={
+              <RequireAuth>
+                <DashboardLayout />
+              </RequireAuth>
+            }
+          >
             <Route index element={<Overview />} />
             <Route path="crm" element={<CRM />} />
+            <Route path="followups" element={<FollowUps />} />
+            <Route path="proposals" element={<Proposals />} />
             <Route path="projects" element={<Projects />} />
             <Route path="pipeline" element={<Pipeline />} />
             <Route path="calendar" element={<ContentCalendar />} />
