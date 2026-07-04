@@ -26,6 +26,14 @@ export const api = {
   createFollowup: (data) => http.post("/followups", data).then((r) => r.data),
   updateFollowup: (id, data) => http.patch(`/followups/${id}`, data).then((r) => r.data),
   deleteFollowup: (id) => http.delete(`/followups/${id}`).then((r) => r.data),
+  // prospects — AI Business Auditor
+  listProspects: () => http.get("/prospects").then((r) => r.data),
+  createProspect: (data) => http.post("/prospects", data).then((r) => r.data),
+  bulkProspects: (prospects) => http.post("/prospects/bulk", { prospects }).then((r) => r.data),
+  updateProspect: (id, data) => http.patch(`/prospects/${id}`, data).then((r) => r.data),
+  deleteProspect: (id) => http.delete(`/prospects/${id}`).then((r) => r.data),
+  auditProspect: (id) => http.post(`/prospects/${id}/audit`).then((r) => r.data),
+  regeneratePitch: (id) => http.post(`/prospects/${id}/pitch`).then((r) => r.data),
   // leads
   listLeads: () => http.get("/leads").then((r) => r.data),
   createLead: (data) => http.post("/leads", data).then((r) => r.data),

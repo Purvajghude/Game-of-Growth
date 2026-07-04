@@ -21,6 +21,7 @@ import TeamTasks from "@/pages/dashboard/TeamTasks";
 import Notes from "@/pages/dashboard/Notes";
 import Proposals from "@/pages/dashboard/Proposals";
 import FollowUps from "@/pages/dashboard/FollowUps";
+import Prospector from "@/pages/dashboard/Prospector";
 import { Toaster } from "@/components/ui/sonner";
 
 function App() {
@@ -45,6 +46,7 @@ function App() {
             }
           >
             <Route index element={<Overview />} />
+            <Route path="prospector" element={<Prospector />} />
             <Route path="crm" element={<CRM />} />
             <Route path="followups" element={<FollowUps />} />
             <Route path="proposals" element={<Proposals />} />

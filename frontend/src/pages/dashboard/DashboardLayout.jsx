@@ -1,10 +1,11 @@
 import { NavLink, Outlet, useLocation, Link, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Users, Kanban, CalendarDays, Sparkles, Settings as SettingsIcon, ArrowLeft, Bell, Search, FolderKanban, Receipt, CheckSquare, FileText, FileSignature, CalendarClock, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, Kanban, CalendarDays, Sparkles, Settings as SettingsIcon, ArrowLeft, Bell, Search, FolderKanban, Receipt, CheckSquare, FileText, FileSignature, CalendarClock, LogOut, Radar } from "lucide-react";
 import { DASH } from "@/constants/testIds";
 import { useEffect } from "react";
 import { auth } from "@/lib/auth";
 
 const NAV_SELL = [
+  { to: "/dashboard/prospector", label: "AI Auditor", icon: Radar,         testId: "dash-nav-prospector" },
   { to: "/dashboard/crm",       label: "Lead CRM",   icon: Users,         testId: DASH.navCrm },
   { to: "/dashboard/followups", label: "Follow-ups", icon: CalendarClock, testId: "dash-nav-followups" },
   { to: "/dashboard/proposals", label: "Proposals",  icon: FileSignature, testId: "dash-nav-proposals" },
@@ -45,6 +46,7 @@ export default function DashboardLayout() {
     "/dashboard": "Overview",
     "/dashboard/projects": "Projects",
     "/dashboard/pipeline": "Pipeline",
+    "/dashboard/prospector": "AI Business Auditor",
     "/dashboard/followups": "Follow-ups",
     "/dashboard/proposals": "Proposals",
     "/dashboard/crm": "Lead CRM",
