@@ -10,8 +10,10 @@ import logging
 import time
 import re
 import ssl
+import json
 import asyncio
 import urllib.request
+import urllib.parse
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional, Dict, Any
@@ -789,6 +791,9 @@ class Prospect(BaseModel):
     founder: Optional[str] = ""
     linkedin: Optional[str] = ""
     instagram: Optional[str] = ""
+    email: Optional[str] = ""
+    phone: Optional[str] = ""
+    area: Optional[str] = ""
     source: Optional[str] = "Apollo"
     status: str = "new"            # new | active | dormant | inactive | closed
     review: str = "pending"        # pending | approved | skip | contacted
@@ -833,6 +838,9 @@ class ProspectCreate(BaseModel):
     founder: Optional[str] = ""
     linkedin: Optional[str] = ""
     instagram: Optional[str] = ""
+    email: Optional[str] = ""
+    phone: Optional[str] = ""
+    area: Optional[str] = ""
     source: Optional[str] = "Manual"
     status: Optional[str] = "new"
 
@@ -844,6 +852,8 @@ class ProspectUpdate(BaseModel):
     founder: Optional[str] = None
     linkedin: Optional[str] = None
     instagram: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
     status: Optional[str] = None
     review: Optional[str] = None
     followers: Optional[int] = None
@@ -1180,6 +1190,191 @@ async def regenerate_pitch(item_id: str):
         {"id": item_id}, {"$set": {"pitch": pitch}}, return_document=True, projection={"_id": 0}
     )
     return _hydrate(res)
+
+
+# ============ Inbound — public Instant Brand Audit ============
+# Runs the real website audit on a visitor's own site. No auth, no storage on
+# the preview call; storage happens only when they claim the full report.
+
+class InstantAuditReq(BaseModel):
+    website: Optional[str] = ""
+    instagram: Optional[str] = ""
+
+
+@api_router.post("/audit/instant")
+async def instant_audit(payload: InstantAuditReq):
+    audit = await asyncio.to_thread(_audit_website, payload.website or "")
+    opp = _opportunity({
+        "mobile_friendly": audit.get("mobile_friendly"),
+        "looks_dated": audit.get("looks_dated"),
+        "website_score": audit.get("website_score"),
+    })
+    return {
+        "reachable": audit.get("reachable", False),
+        "website_score": audit.get("website_score"),
+        "website_scores": audit.get("website_scores", {}),
+        "notes": audit.get("website_notes", ""),
+        "mobile_friendly": audit.get("mobile_friendly"),
+        "looks_dated": audit.get("looks_dated"),
+        "signals": opp["signals"],
+        "opportunity_score": opp["opportunity_score"],
+        "instagram": payload.instagram or audit.get("socials_found", {}).get("instagram", ""),
+    }
+
+
+class ClaimReq(BaseModel):
+    name: str
+    email: str
+    company: Optional[str] = ""
+    website: Optional[str] = ""
+    instagram: Optional[str] = ""
+    goal: Optional[str] = ""
+
+
+@api_router.post("/audit/claim")
+async def claim_audit(payload: ClaimReq):
+    # 1) create a Prospect (source Inbound) with a full audit already run
+    prospect = Prospect(
+        company=payload.company or payload.name,
+        website=payload.website or "",
+        instagram=payload.instagram or "",
+        email=payload.email,
+        founder=payload.name,
+        source="Inbound",
+        status="active",
+    )
+    pdoc = prospect.model_dump()
+    audit = await asyncio.to_thread(_audit_website, payload.website or "")
+    for k in ["website_scores", "website_score", "website_notes", "mobile_friendly",
+              "looks_dated", "last_updated_year", "has_blog", "has_contact", "https"]:
+        if k in audit:
+            pdoc[k] = audit[k]
+    pdoc["social_score"] = _social_score(pdoc)
+    pdoc.update(_opportunity(pdoc))
+    pdoc["pitch"] = _compose_pitch(pdoc)
+    pdoc["deliverables"] = _default_deliverables(pdoc)
+    pdoc["audited_at"] = datetime.now(timezone.utc).isoformat()
+    pdoc["created_at"] = pdoc["created_at"].isoformat()
+    await db.prospects.insert_one(pdoc)
+
+    # 2) create a Lead so it lands in the CRM with the contact + intent
+    note = f"Requested free brand audit via the site."
+    if payload.goal:
+        note += f" Goal: {payload.goal}"
+    lead = Lead(name=payload.name, email=payload.email, company=payload.company or "",
+                notes=note, source="Instant Audit", status="new")
+    ldoc = lead.model_dump()
+    ldoc["created_at"] = ldoc["created_at"].isoformat()
+    await db.leads.insert_one(ldoc)
+
+    return {"ok": True, "opportunity_score": pdoc.get("opportunity_score")}
+
+
+# ============ Free discovery — OpenStreetMap public listings ============
+# No API key. Nominatim geocodes the city, Overpass returns public business
+# listings for a category. Respects the free-tier usage policy (User-Agent,
+# modest limits). Returns previews only; the team adds selected rows to the board.
+
+_OSM_TAGS = {
+    "chocolate": ("shop", "chocolate"), "confection": ("shop", "confectionery"),
+    "perfume": ("shop", "perfumery"), "fragrance": ("shop", "perfumery"),
+    "cosmetic": ("shop", "cosmetics"), "beauty": ("shop", "cosmetics"),
+    "bakery": ("shop", "bakery"), "cafe": ("amenity", "cafe"), "coffee": ("amenity", "cafe"),
+    "restaurant": ("amenity", "restaurant"), "gym": ("leisure", "fitness_centre"),
+    "fitness": ("leisure", "fitness_centre"), "yoga": ("leisure", "fitness_centre"),
+    "clothing": ("shop", "clothes"), "apparel": ("shop", "clothes"), "fashion": ("shop", "clothes"),
+    "jewel": ("shop", "jewelry"), "salon": ("shop", "hairdresser"), "spa": ("leisure", "spa"),
+    "clinic": ("amenity", "clinic"), "dental": ("amenity", "dentist"), "hotel": ("tourism", "hotel"),
+    "florist": ("shop", "florist"), "furniture": ("shop", "furniture"), "bookstore": ("shop", "books"),
+}
+_OSM_UA = {"User-Agent": "GameOfGrowth-Auditor/1.0 (hello@gameofgrowth.studio)"}
+
+
+def _osm_tag(category: str):
+    c = (category or "").lower()
+    for key, tag in _OSM_TAGS.items():
+        if key in c:
+            return tag
+    return None
+
+
+def _geocode(city: str):
+    url = "https://nominatim.openstreetmap.org/search?" + urllib.parse.urlencode(
+        {"format": "json", "limit": 1, "q": city}
+    )
+    req = urllib.request.Request(url, headers=_OSM_UA)
+    with urllib.request.urlopen(req, timeout=15) as r:
+        data = json.loads(r.read().decode("utf-8", "ignore"))
+    if not data:
+        return None
+    bb = data[0].get("boundingbox")  # [south, north, west, east]
+    if not bb:
+        return None
+    south, north, west, east = float(bb[0]), float(bb[1]), float(bb[2]), float(bb[3])
+    return south, west, north, east
+
+
+def _overpass(tag, bbox, limit):
+    south, west, north, east = bbox
+    key, val = tag
+    query = (
+        f"[out:json][timeout:25];"
+        f'( nwr["{key}"="{val}"]({south},{west},{north},{east}); );'
+        f"out center {int(limit)};"
+    )
+    data_bytes = urllib.parse.urlencode({"data": query}).encode()
+    req = urllib.request.Request("https://overpass-api.de/api/interpreter", data=data_bytes, headers=_OSM_UA)
+    with urllib.request.urlopen(req, timeout=40) as r:
+        return json.loads(r.read().decode("utf-8", "ignore")).get("elements", [])
+
+
+class DiscoverReq(BaseModel):
+    category: str
+    city: str
+    limit: Optional[int] = 40
+
+
+@api_router.post("/discover/osm")
+async def discover_osm(payload: DiscoverReq):
+    tag = _osm_tag(payload.category)
+    if not tag:
+        supported = sorted({k for k in _OSM_TAGS})
+        raise HTTPException(400, f"Category not recognised. Try one of: {', '.join(supported)}")
+    try:
+        bbox = await asyncio.to_thread(_geocode, payload.city)
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(502, f"Could not look up that city ({type(e).__name__}).")
+    if not bbox:
+        raise HTTPException(404, "City not found.")
+    try:
+        elements = await asyncio.to_thread(_overpass, tag, bbox, min(payload.limit or 40, 80))
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(502, f"Listings service busy ({type(e).__name__}). Try again shortly.")
+
+    seen = set()
+    results = []
+    for el in elements:
+        t = el.get("tags", {})
+        name = t.get("name")
+        if not name:
+            continue
+        website = t.get("website") or t.get("contact:website") or ""
+        key = (name.lower(), website.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        results.append({
+            "company": name,
+            "website": website,
+            "email": t.get("email") or t.get("contact:email") or "",
+            "phone": t.get("phone") or t.get("contact:phone") or "",
+            "instagram": t.get("contact:instagram") or "",
+            "area": t.get("addr:city") or t.get("addr:suburb") or payload.city,
+            "industry": payload.category,
+        })
+    # surface the ones with a website first (better audit targets)
+    results.sort(key=lambda r: (r["website"] == "", r["email"] == ""))
+    return {"count": len(results), "results": results}
 
 
 # ============ Stats ============

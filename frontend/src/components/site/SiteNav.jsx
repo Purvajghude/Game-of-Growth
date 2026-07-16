@@ -8,6 +8,7 @@ const LINKS = [
   { to: "/work", label: "Work" },
   { to: "/studio", label: "Studio" },
   { to: "/store", label: "Store" },
+  { to: "/audit", label: "Free audit" },
   { to: "/contact", label: "Contact" },
 ];
 

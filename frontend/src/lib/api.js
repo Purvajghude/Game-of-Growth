@@ -34,6 +34,11 @@ export const api = {
   deleteProspect: (id) => http.delete(`/prospects/${id}`).then((r) => r.data),
   auditProspect: (id) => http.post(`/prospects/${id}/audit`).then((r) => r.data),
   regeneratePitch: (id) => http.post(`/prospects/${id}/pitch`).then((r) => r.data),
+  // inbound instant audit (public)
+  instantAudit: (data) => http.post("/audit/instant", data).then((r) => r.data),
+  claimAudit: (data) => http.post("/audit/claim", data).then((r) => r.data),
+  // free discovery
+  discoverOsm: (data) => http.post("/discover/osm", data).then((r) => r.data),
   // leads
   listLeads: () => http.get("/leads").then((r) => r.data),
   createLead: (data) => http.post("/leads", data).then((r) => r.data),

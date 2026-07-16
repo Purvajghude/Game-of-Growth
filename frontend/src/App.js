@@ -6,6 +6,7 @@ import Work from "@/pages/Work";
 import Studio from "@/pages/Studio";
 import Store from "@/pages/Store";
 import Contact from "@/pages/Contact";
+import Audit from "@/pages/Audit";
 import Login from "@/pages/Login";
 import RequireAuth from "@/components/RequireAuth";
 import DashboardLayout from "@/pages/dashboard/DashboardLayout";
@@ -34,6 +35,7 @@ function App() {
             <Route path="/work" element={<Work />} />
             <Route path="/studio" element={<Studio />} />
             <Route path="/store" element={<Store />} />
+            <Route path="/audit" element={<Audit />} />
             <Route path="/contact" element={<Contact />} />
           </Route>
           <Route path="/login" element={<Login />} />

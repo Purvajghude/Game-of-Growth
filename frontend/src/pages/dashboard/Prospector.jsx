@@ -3,7 +3,7 @@ import { api } from "@/lib/api";
 import { toast } from "sonner";
 import {
   Plus, X, Trash2, Upload, Radar, Sparkles, Globe, Instagram, Download,
-  Loader2, Check, RefreshCw, ChevronRight, TrendingUp,
+  Loader2, Check, RefreshCw, ChevronRight, TrendingUp, Search, MapPin, Mail, Phone,
 } from "lucide-react";
 
 const TIER = {
@@ -63,6 +63,7 @@ export default function Prospector() {
   const [addOpen, setAddOpen] = useState(false);
   const [auditing, setAuditing] = useState({});
   const [form, setForm] = useState({ company: "", website: "", industry: "", founder: "", linkedin: "", instagram: "" });
+  const [discoverOpen, setDiscoverOpen] = useState(false);
   const fileRef = useRef(null);
 
   const load = async () => {
@@ -90,14 +91,19 @@ export default function Prospector() {
     const fi = pick(headers, ["founder", "first name", "owner", "name", "contact"]);
     const li = pick(headers, ["linkedin"]);
     const gi = pick(headers, ["instagram"]);
+    const ei = pick(headers, ["email"]);
+    const pi = pick(headers, ["phone", "mobile"]);
     if (ci === -1) { toast.error("No 'Company' column found in that CSV."); return; }
+    const cell = (r, idx) => (idx !== -1 ? (r[idx] || "").trim() : "");
     const prospects = rows.slice(1).map((r) => ({
-      company: (r[ci] || "").trim(),
-      website: wi !== -1 ? (r[wi] || "").trim() : "",
-      industry: ii !== -1 ? (r[ii] || "").trim() : "",
-      founder: fi !== -1 ? (r[fi] || "").trim() : "",
-      linkedin: li !== -1 ? (r[li] || "").trim() : "",
-      instagram: gi !== -1 ? (r[gi] || "").trim() : "",
+      company: cell(r, ci),
+      website: cell(r, wi),
+      industry: cell(r, ii),
+      founder: cell(r, fi),
+      linkedin: cell(r, li),
+      instagram: cell(r, gi),
+      email: cell(r, ei),
+      phone: cell(r, pi),
       source: "Apollo",
     })).filter((p) => p.company);
     if (!prospects.length) { toast.error("No rows with a company name."); return; }
@@ -175,6 +181,9 @@ export default function Prospector() {
         </div>
         <div className="flex items-center gap-2">
           <input ref={fileRef} type="file" accept=".csv,text/csv" onChange={onFile} className="hidden" data-testid="prospector-csv-input" />
+          <button onClick={() => setDiscoverOpen(true)} className="dash-btn-ghost inline-flex items-center gap-1.5" data-testid="prospector-discover-btn">
+            <Search className="w-4 h-4" /> Find free
+          </button>
           <button onClick={() => fileRef.current?.click()} className="dash-btn-ghost inline-flex items-center gap-1.5" data-testid="prospector-import-btn">
             <Upload className="w-4 h-4" /> Import CSV
           </button>
@@ -322,7 +331,109 @@ export default function Prospector() {
           onPatch={patchLocal}
         />
       )}
+
+      {/* free discovery slide-over */}
+      {discoverOpen && (
+        <DiscoverPanel onClose={() => setDiscoverOpen(false)} onAdded={load} />
+      )}
     </div>
+  );
+}
+
+function DiscoverPanel({ onClose, onAdded }) {
+  const [q, setQ] = useState({ category: "", city: "" });
+  const [results, setResults] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [picked, setPicked] = useState(() => new Set());
+  const [adding, setAdding] = useState(false);
+
+  const search = async (e) => {
+    e.preventDefault();
+    if (!q.category.trim() || !q.city.trim()) { setError("Enter a category and a city."); return; }
+    setError(""); setLoading(true); setResults(null); setPicked(new Set());
+    try {
+      const r = await api.discoverOsm({ category: q.category, city: q.city, limit: 60 });
+      setResults(r.results);
+      setPicked(new Set(r.results.map((_, i) => i))); // default: all selected
+    } catch (err) {
+      setError(err?.response?.data?.detail || "Search failed. Try again shortly.");
+    } finally { setLoading(false); }
+  };
+
+  const toggle = (i) => setPicked((p) => { const n = new Set(p); n.has(i) ? n.delete(i) : n.add(i); return n; });
+  const allOn = results && picked.size === results.length;
+  const toggleAll = () => setPicked(allOn ? new Set() : new Set(results.map((_, i) => i)));
+
+  const add = async () => {
+    if (!results || picked.size === 0) return;
+    setAdding(true);
+    try {
+      const chosen = results.filter((_, i) => picked.has(i)).map((r) => ({ ...r, source: "OSM Discovery" }));
+      const res = await api.bulkProspects(chosen);
+      toast.success(`Added ${res.created} prospects to the board`);
+      onAdded();
+      onClose();
+    } catch { toast.error("Could not add prospects"); }
+    finally { setAdding(false); }
+  };
+
+  return (
+    <SlideOver title="Find prospects" onClose={onClose} wide>
+      <p className="text-[13.5px] text-[var(--muted)] -mt-3 mb-5 leading-relaxed">
+        Free public business listings from OpenStreetMap. No API key, no cold-scraping. Pick a category and a city.
+      </p>
+      <form onSubmit={search} className="space-y-3">
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div className="flex items-center gap-2 dash-input !py-0 !px-3">
+            <Radar className="w-4 h-4 text-[var(--muted)] shrink-0" />
+            <input className="bg-transparent outline-none text-sm py-2.5 w-full" placeholder="Category e.g. chocolate, perfume, cafe" value={q.category} onChange={(e) => setQ({ ...q, category: e.target.value })} data-testid="discover-category" />
+          </div>
+          <div className="flex items-center gap-2 dash-input !py-0 !px-3">
+            <MapPin className="w-4 h-4 text-[var(--muted)] shrink-0" />
+            <input className="bg-transparent outline-none text-sm py-2.5 w-full" placeholder="City e.g. Mumbai" value={q.city} onChange={(e) => setQ({ ...q, city: e.target.value })} data-testid="discover-city" />
+          </div>
+        </div>
+        <button type="submit" disabled={loading} className="dash-btn inline-flex items-center gap-1.5 disabled:opacity-60" data-testid="discover-search">
+          {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Searching listings…</> : <><Search className="w-4 h-4" /> Search public listings</>}
+        </button>
+        {error && <p className="text-[13px] text-[#a03d2a]">{error}</p>}
+      </form>
+
+      {results && (
+        <div className="mt-6">
+          {results.length === 0 ? (
+            <p className="text-[var(--muted)] text-sm">No listings found for that category + city. Try a broader category.</p>
+          ) : (
+            <>
+              <div className="flex items-center justify-between mb-2">
+                <button onClick={toggleAll} className="text-[12.5px] font-medium text-[var(--accent)] hover:underline">{allOn ? "Deselect all" : "Select all"}</button>
+                <p className="font-mono text-[11px] text-[var(--muted)]">{picked.size} of {results.length} selected</p>
+              </div>
+              <div className="border border-[var(--line)] rounded-xl divide-y divide-[var(--line)] max-h-[46vh] overflow-y-auto">
+                {results.map((r, i) => (
+                  <label key={i} className="flex items-start gap-3 p-3 cursor-pointer hover:bg-[var(--paper-2)]">
+                    <input type="checkbox" checked={picked.has(i)} onChange={() => toggle(i)} className="accent-[var(--ink)] mt-1" />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-[var(--ink)] text-sm truncate">{r.company}</p>
+                      <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5 text-[11.5px] text-[var(--muted)]">
+                        {r.website && <span className="inline-flex items-center gap-1 truncate max-w-[180px]"><Globe className="w-3 h-3" /> {r.website.replace(/^https?:\/\//, "")}</span>}
+                        {r.email && <span className="inline-flex items-center gap-1"><Mail className="w-3 h-3" /> {r.email}</span>}
+                        {r.phone && <span className="inline-flex items-center gap-1"><Phone className="w-3 h-3" /> {r.phone}</span>}
+                        {r.area && <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" /> {r.area}</span>}
+                      </div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+              <button onClick={add} disabled={adding || picked.size === 0} className="dash-btn mt-4 w-full inline-flex items-center justify-center gap-1.5 disabled:opacity-60">
+                {adding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} Add {picked.size} to board
+              </button>
+            </>
+          )}
+        </div>
+      )}
+    </SlideOver>
   );
 }
 
@@ -413,9 +524,11 @@ function ProspectDetail({ prospect, auditing, onClose, onAudit, onPatch }) {
       <div className="space-y-7">
         {/* meta + audit */}
         <div>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
             {prospect.website && <a href={prospect.website.startsWith("http") ? prospect.website : `https://${prospect.website}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[13px] text-[var(--accent)] hover:underline"><Globe className="w-3.5 h-3.5" /> {prospect.website}</a>}
             {prospect.instagram && <span className="inline-flex items-center gap-1.5 text-[13px] text-[var(--ink-2)]"><Instagram className="w-3.5 h-3.5" /> {prospect.instagram}</span>}
+            {prospect.email && <a href={`mailto:${prospect.email}`} className="inline-flex items-center gap-1.5 text-[13px] text-[var(--ink-2)] hover:text-[var(--ink)]"><Mail className="w-3.5 h-3.5" /> {prospect.email}</a>}
+            {prospect.phone && <span className="inline-flex items-center gap-1.5 text-[13px] text-[var(--ink-2)]"><Phone className="w-3.5 h-3.5" /> {prospect.phone}</span>}
           </div>
           <button onClick={onAudit} disabled={auditing} className="dash-btn mt-4 inline-flex items-center gap-1.5 disabled:opacity-60">
             {auditing ? <><Loader2 className="w-4 h-4 animate-spin" /> Auditing…</> : <><Radar className="w-4 h-4" /> Run website audit</>}
